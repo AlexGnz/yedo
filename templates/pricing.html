@@ -1,0 +1,176 @@
+{% extends 'base.html' %}
+{% block padding-top %}
+    style="padding-top: 90px;"
+{% endblock %}
+{% block body %}
+    <section class="hero py-5">
+      <div class="container position-relative">
+
+        <h1 class="hero-heading">{% if pricing %}Prix et fonctionnalités{% else %}Choisissez le montant{% endif %}</h1>
+      </div>
+    </section>
+    {% if pricing %}
+    <section class="py-5">
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-4">
+            <!-- pricing card-->
+            <div class="card mb-5 mb-lg-0 border-0 shadow">
+              <div class="card-body">
+                <h2 class="text-base subtitle text-center text-primary py-3">Unique</h2>
+                <p class="text-muted text-center"><span class="h1 text-dark">3€</span><span class="ml-2">/ débloquage</span></p>
+                <hr/>
+                <ul class="fa-ul my-4">
+                  <li class="mb-3"><span class="fa-li text-primary"><i class="fas fa-check"></i></span>Coordonnées de l'étudiant</li>
+                  <li class="mb-3"><span class="fa-li text-primary"><i class="fas fa-check"></i></span>Remboursé en cas de refus de l'étudiant</li>
+                  <li class="mb-3 text-muted"><span class="fa-li"><i class="fas fa-times"></i></span>Débloquages illimités</li>
+                  <li class="mb-3 text-muted"><span class="fa-li"><i class="fas fa-times"></i></span>Accès au classement des étudiants</li>
+                  <li class="mb-3 text-muted"><span class="fa-li"><i class="fas fa-times"></i></span>Accès aux étudiants Premium <b><svg class="svg-icon text-info"><use xlink:href="#diamond-1"></use></svg></b></li>
+                  <li class="mb-3 text-muted"><span class="fa-li"><i class="fas fa-times"></i></span>Étudiants favoris <i class="fa fa-heart text-secondary"></i></li>
+                     <li class="mb-3 text-muted"><span class="fa-li"><i class="fas fa-times"></i></span>Prise en charge de l'administratif</li>
+                     <li class="mb-3 text-muted"><span class="fa-li"><i class="fas fa-times"></i></span>Contrat établi par l'intermédiaire d'une agence d'intérim</li>
+                </ul>
+                  {% if payment %}
+                <div class="text-center">
+                    <form method="POST" action="{% url 'recap' %}">{% csrf_token %}
+                        <input type="hidden" name="plan_selected" value="1">
+                    <button type="submit" class="btn btn-outline-primary">Choisir</button>
+                    </form>
+                    </div>{% endif %}
+              </div>
+            </div>
+            <!-- /pricing card -->
+          </div>
+          <div class="col-lg-4">
+            <!-- pricing card-->
+            <div class="card mb-5 mb-lg-0 border-0 card-highlight shadow-lg">
+                <div class="ribbon ribbon-primary">Formule la plus populaire</div>
+{#              <div class="card-status bg-primary"></div>#}
+              <div class="card-body">
+                <h2 class="text-base subtitle text-center text-primary py-3">Illimité</h2>
+                <p class="text-muted text-center"><span class="h1 text-dark">15€</span><span class="ml-2">/ mois</span></p>
+                <hr/>
+                <ul class="fa-ul my-4">
+                  <li class="mb-3"><span class="fa-li text-primary"><i class="fas fa-check"></i></span>Coordonnées des étudiants</li>
+                  <li class="mb-3"><span class="fa-li text-primary"><i class="fas fa-check"></i></span>Debloquages illimités</li>
+                  <li class="mb-3"><span class="fa-li text-primary"><i class="fas fa-check"></i></span>Accès au classement des étudiants</li>
+                  <li class="mb-3"><span class="fa-li text-primary"><i class="fas fa-check"></i></span>Accès aux étudiants Premium <b><svg class="svg-icon text-info"><use xlink:href="#diamond-1"></use></svg></b></li>
+                  <li class="mb-3"><span class="fa-li text-primary"><i class="fas fa-check"></i></span>Étudiants favoris <i class="fa fa-heart text-secondary"></i></li>
+                  <li class="mb-3 text-muted"><span class="fa-li"><i class="fas fa-times"></i></span>Prise en charge de l'administratif</li>
+                  <li class="mb-3 text-muted"><span class="fa-li"><i class="fas fa-times"></i></span>Contrat établi par l'intermédiaire d'une agence d'intérim</li>
+                </ul>
+                  {% if payment %}
+                <div class="text-center">
+                    <form method="POST" action="{% url 'recap' %}">{% csrf_token %}
+                        <input type="hidden" name="plan_selected" value="2">
+                    <button type="submit" class="btn btn-outline-primary">Choisir</button>
+                    </form>
+                </div>
+                      {% endif %}
+              </div>
+            </div>
+            <!-- /pricing card -->
+          </div>
+          <div class="col-lg-4">
+            <!-- pricing card-->
+            <div class="card mb-5 mb-lg-0 border-0 shadow">
+              <div class="card-body">
+                <h2 class="text-base subtitle text-center text-primary py-3">All-In-One</h2>
+                <p class="text-muted text-center"><span class="h1 text-dark">10%</span><span class="ml-2">/contrat</span></p>
+                <hr/>
+                <ul class="fa-ul my-4">
+                  <li class="mb-3"><span class="fa-li text-primary"><i class="fas fa-check"></i></span>Coordonnées des étudiants</li>
+                  <li class="mb-3"><span class="fa-li text-primary"><i class="fas fa-check"></i></span>Debloquages illimités</li>
+                  <li class="mb-3"><span class="fa-li text-primary"><i class="fas fa-check"></i></span>Accès au classement des étudiants</li>
+                  <li class="mb-3"><span class="fa-li text-primary"><i class="fas fa-check"></i></span>Accès aux étudiants Premium <b><svg class="svg-icon text-info"><use xlink:href="#diamond-1"></use></svg></b></li>
+                  <li class="mb-3"><span class="fa-li text-primary"><i class="fas fa-check"></i></span>Étudiants favoris <i class="fa fa-heart text-secondary"></i></li>
+                  <li class="mb-3"><span class="fa-li text-primary"><i class="fas fa-check"></i></span>Prise en charge de l'administratif</li>
+                  <li class="mb-3"><span class="fa-li text-primary"><i class="fas fa-check"></i></span>Contrat établi par l'intermédiaire d'une agence d'intérim</li>
+                </ul>
+                {% if payment %}<div class="text-center">
+                    <form method="POST" action="{% url 'recap' %}">{% csrf_token %}
+                        <input type="hidden" name="plan_selected" value="3">
+                    <button type="submit" class="btn btn-outline-primary">Choisir</button>
+                    </form>
+                </div>
+                    {% endif %}
+              </div>
+            </div>
+            <!-- /pricing card -->
+
+          </div>
+
+        </div>
+      {% if payment %}
+            <div class="row form-block flex-column flex-sm-row">
+            <div class="col text-center text-sm-left">
+                <a href="{% url 'employeur_profile' %}">
+                    <button type="submit" class="btn btn-link text-muted"> <i class="fa-chevron-left fa mr-2"></i>Revenir</button></a>
+            </div>
+                <div class="col text-center text-sm-right">
+                <a href="{% url 'employeur_profile' %}">
+                    <button type="submit" class="btn btn-link text-muted"> Payer plus tard <i class="fa-chevron-right fa mr-2"></i></button></a>
+            </div>
+        </div>
+
+        {% endif %}
+        </div>
+      </div>
+    </section>
+    {% else %}
+        <section class="py-6">
+      <div class="container">
+        <div class="row">
+        <div class="col-lg-4">
+            <div class="card mb-5 mb-lg-0 border-0 shadow">
+              <div class="card-body">
+                <h2 class="text-base subtitle text-center text-primary py-3">Info</h2>
+                  <p class="text-muted">Le montant du débloquage unique vous sera remboursé automatiquement si l'étudiant refuse votre demande.</p>
+
+              </div>
+            </div>
+        </div>
+          <div class="col-lg-4">
+            <!-- pricing card-->
+            <div class="card mb-5 mb-lg-0 border-0 shadow">
+              <div class="card-body">
+                  <form method="POST" action="{% url 'payment' %}">
+                      {% csrf_token %}
+                <h2 class="text-base subtitle text-center text-primary py-3">Choisissez le montant à ajouter à votre compte</h2>
+                  <input type="text" class="form-control" placeholder="Montant à ajouter" name="amount">
+                <p class="text-muted text-center"><span class="h1 text-dark">3€</span><span class="ml-2">/ débloquage</span></p>
+
+                  {% if error is not None %}<p class="text-center" style="color: orangered">{{ error }}</p>{% endif %}
+                <hr/>
+                <div class="text-center">
+
+                        <input type="hidden" name="plan_selected" value="1">
+                  <input type="hidden" name="form_amount_sent" value="true">
+                    <button type="submit" class="btn btn-outline-primary">Payer</button>
+
+                    </div>
+                      </form>
+              </div>
+            </div>
+            <!-- /pricing card -->
+          </div>
+        <div class="col-lg-4"></div>
+            <div class="row form-block flex-column flex-sm-row">
+            <div class="col text-center text-sm-left">
+                <a href="{% url 'payment' %}">
+                    <button type="submit" class="btn btn-link text-muted"> <i class="fa-chevron-left fa mr-2"></i>Revenir</button></a>
+            </div>
+                <div class="col text-center text-sm-right">
+                <a href="{% url 'employeur_profile' %}">
+                    <button type="submit" class="btn btn-link text-muted"> Payer plus tard <i class="fa-chevron-right fa mr-2"></i></button></a>
+            </div>
+        </div>
+        </div>
+      </div>
+    </section>
+
+    {% endif %}
+    <script>
+    mixpanel.track("Pricing");
+    </script>
+{% endblock %}

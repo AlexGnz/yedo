@@ -1,0 +1,16 @@
+
+{% extends 'student-sign-up-steps/step_base.html' %}
+
+{% block body %}
+    <section class="py-7 py-lg-6">
+      <div class="container text-center">
+        <p class="subtitle text-primary">Yedo est pour l'instant indisponible !</p>
+        <h1 class="h2 mb-5"> Merci pour votre intérêt, nous revenons bientôt</h1>
+        <p class="mb-5"><img src="https://yedo.s3.eu-west-3.amazonaws.com/static/tus/img/illustration/undraw_co-working_825n.svg" alt="" style="width: 400px;" class="img-fluid"></p>
+      </div>
+    </section>
+    <script>
+    mixpanel.track("Landing page");
+    </script>
+
+{% endblock %}

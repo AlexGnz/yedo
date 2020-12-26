@@ -1,0 +1,287 @@
+{% extends 'student-sign-up-steps/step_base.html' %}
+{% block body %}
+<div style="height: 8px; top: 0px;" class="progress rounded-0 sticky-top">
+      <div role="progressbar" style="width: 50%" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100" class="progress-bar"></div>
+    </div>
+    <section class="py-5">
+      <div class="container">
+        <p class="subtitle text-primary">Trouve un job d'étudiant en 5 clics !</p>
+        <h1 class="h2 mb-5"> Tes compétences <span class="text-muted float-right">Étape 2</span>      </h1>
+        <form method="POST" action="{% url 'new' %}" id="form_step2">
+            {% csrf_token %}
+        <input type="hidden" name="step2_form" value="true">
+          <div class="row form-block">
+            <div class="col-lg-4">
+              <h4>Langues maitrisées</h4>
+              <p class="text-muted text-sm"> Ajoute les langues que tu maitrises{% if student.languages.all|length > 0 %}<br>Langue{% if student.languages.all|length > 1 %}s{% endif %} ajoutée{% if student.languages.all|length > 1 %}s{% endif %} : <br>
+              <ul>{% for l in student.languages.all %}
+                  <li>Tu as indiqué que tu parles {{ l.language.value_fr|lower }} avec un niveau {{ l.level.value_fr|lower }}  <a href="#" onclick="removeLang({{ l.id }})"><span class="text-primary"><i class="fa fa-times"></i></span></a></li>
+                  {% endfor %}
+              </ul>
+              {% endif %}
+                </p>
+            </div>
+            <div class="col-lg-7 ml-auto">
+                  <div class="form-group">
+
+                    <input type="hidden" name="added_language" value="false" id="inputHiddenLang">
+              <select name="language_text" id="form_type" title="Ajoute une langue" data-style="btn-selectpicker" data-size="4" data-actions-box="true" data-live-search="true" class="selectpicker">
+                {% for l in languages_text %}
+                    <option value="{{l.id}}">{{l.value_fr}}</option>
+              {% endfor %}
+              </select>
+              <select name="language_level" id="form_type" title="Ton niveau" data-style="btn-selectpicker" data-size="4" data-actions-box="true" data-live-search="true" class="selectpicker">
+                {% for l in languages_levels %}
+                    <option value="{{l.id}}">{{l.value_fr}}</option>
+              {% endfor %}
+              </select>
+                  </div>
+            <div class="form-group">
+<button class="btn btn-primary" onclick="addLanguage()">Ajouter cette langue</button>
+            </div>
+            </div>
+          </div>
+        <div class="row form-block">
+            <div class="col-lg-4">
+              <h4>Dernier diplôme obtenu</h4>
+
+            </div>
+            <div class="col-lg-7 ml-auto">
+
+
+                  <div class="form-group">
+              <select name="study_type" id="form_type" title="Type d'enseignement" data-style="btn-selectpicker" data-size="4" data-actions-box="true" data-live-search="true" class="selectpicker form-control">
+                {% for d in study_types %}
+                    <option value="{{d.id}}" {% if student.study_type %}{% if d.id == student.study_type.id %}selected="selected"{% endif %}{% endif %}>{{d.value_fr}}</option>
+              {% endfor %}
+              </select>
+                       <select name="study_level" id="form_level" title="Niveau d'enseignement" data-style="btn-selectpicker" data-size="4" data-actions-box="true" data-live-search="true" class="selectpicker form-control">
+                {% for d in study_levels %}
+                    <option value="{{d.id}}" {% if student.study_level %}{% if d.id == student.study_level.id %}selected="selected"{% endif %}{% endif %}>{{d.value_fr}}</option>
+              {% endfor %}
+              </select>
+                       <select name="study_domain" id="form_domain" title="Domaine d'enseignement" data-style="btn-selectpicker" data-size="4" data-actions-box="true" data-live-search="true" class="selectpicker form-control">
+                {% for d in study_domains %}
+                    <option value="{{d.id}}" {% if student.study_domain %}{% if d.id == student.study_domain.id %}selected="selected"{% endif %}{% endif %}>{{d.value_fr}}</option>
+              {% endfor %}
+              </select>
+                  </div>
+                <div class="form-group">
+                       <label for="form_diplome" class="form-label">Ton age</label>
+              <input type="number" class="form-control" name="age" value="{% if student.age %}{{ student.age }}{% endif %}" style="width: 300px;">
+                  </div>
+            </div>
+          </div>
+          <div class="row form-block">
+            <div class="col-lg-4">
+              <h4>Quels jobs t'intéressent ?</h4>
+              <p class="text-muted text-sm">Sélectionne ce que tu recherches afin de te matcher avec un employeur !</p>
+            </div>
+            <div class="col-lg-7 ml-auto">
+              <div class="form-group">
+                <label class="form-label">Types de jobs recherchés</label>
+                <ul class="list-inline mb-0">
+                {% for j in jobs_wanted %}
+                        <li class="list-inline-item">
+                    <div class="custom-control custom-checkbox">
+                      <input type="checkbox" id="{{j.id}}" checked name="job_{{j.id}}" class="custom-control-input">
+                      <label for="{{j.id}}" class="custom-control-label text-muted">{{ j.nom }}    </label>
+                    </div>
+                  </li>
+                    {% endfor %}
+                    {% for j in jobs %}
+                        {% if j not in jobs_wanted %}
+
+                        <li class="list-inline-item">
+                    <div class="custom-control custom-checkbox">
+                      <input type="checkbox" id="{{j.id}}" name="job_{{j.id}}" class="custom-control-input">
+                      <label for="{{j.id}}" class="custom-control-label text-muted">{{ j.nom }}    </label>
+                    </div>
+                  </li>
+                        {% endif %}
+                    {% endfor %}
+                </ul>
+              </div>
+            </div>
+          </div>
+        <div class="row form-block">
+            <div class="col-lg-4">
+              <h4>Quelles sont tes disponiblités ?</h4>
+                 <p class="text-muted text-sm">
+                    <ul>
+              <li class="text-muted text-sm">
+                  <b>Travail à distance</b> : Tu travailleras depuis le lieu de ton choix /à domicile (Gestion d'une page FB, etc..)
+              </li>
+              <li class="text-muted text-sm">
+                  <b>Travail régulier</b> : Tu travailleras sur le lieu de travail convenu de manière régulière (Tous les dimanches matin)
+              </li>
+              <li class="text-muted text-sm">
+                  <b>Travail ponctuel</b> : Tu travailleras à un moment spécifique convenu (Serveur pour une soirée)
+              </li>
+              <li class="text-muted text-sm">
+                  <b>Stage</b> : Tu travailleras sur base d'une convention de stage
+              </li></ul></p>
+            </div>
+            <div class="col-lg-7 ml-auto">
+            {% if student.dispos_set %}
+                <div class="form-group">
+                <label class="form-label">Tes disponibilités ont été sauvées.<br> Celles-ci étaient incorrectes ? Rends toi dans ton profil pour les modifier une fois ton compte crée.</label>
+                </div>
+
+            {% else %}
+                <div class="form-group">
+                <select name="dispo_type" id="form_dispo_type" data-style="btn-primary" title="" class="selectpicker mb-3" onchange="checkType()">
+                    {% for d in disponibility_types %}
+                      <option value="{{ d.intern_id }}">{{ d.texte }}</option>
+                    {% endfor %}
+                </select>
+              <div style="display: none" id="form_choose_soiree" >
+              <select name="journee" data-style="btn-muted" title="" class="selectpicker mb-3">
+                      <option value="1">En journée</option>
+                    <option value="0">En soirée</option>
+                </select>
+              </div>
+              <div style="display: none" id="form_stage" >
+              <select name="stage_remunere" data-style="btn-muted" title="" class="selectpicker mb-3">
+                      <option value="1">Rémunéré</option>
+                    <option value="0">Non rémunéré</option>
+                </select>
+              </div>
+<div style="display: initial" id="form_choose_days">
+
+                <select name="days" data-style="btn-selectpicker" title="" style="width: 150%" class="selectpicker mb-3">
+                    <option value="1">1 jour semaine</option>
+                    <option value="2">2 jours semaine</option>
+                    <option value="3">3 jours semaine</option>
+                    <option value="4">4 jours semaine</option>
+                    <option value="5">5 jours semaine</option>
+                </select>
+</div>
+              <div id="form_dispo_description" style="display: none">
+                  <textarea name="description_dispo" rows="2" aria-describedby="descriptionHelp" class="form-control"></textarea><small id="descriptionHelp" class="form-text text-muted mt-2">Donne plus de détails à l'employeur quant à tes disponibilités ! </small>
+              </div>
+              </div>
+            {% endif %}
+
+            </div>
+          </div>
+        <div class="row form-block">
+            <div class="col-lg-4">
+              <h4>Précise les via ce calendrier</h4>
+              <p class="text-muted text-sm">Au plus tôt tu mettras tes disponibilités, au plus tu agrandiras tes chances de trouver un job rapidement. N'oublie pas de mettre à jour tes disponibilités tous les mois.</p>
+            </div>
+            <div class="col-lg-7 ml-auto">
+                <div class="form-group">
+                    <input type="hidden" name="dates" id="datesChosen">
+                    <div id="calendar" class="datepicker-here" data-multiple-dates="200"
+                         data-multiple-dates-separator=", "></div>
+                </div>
+
+          </div>
+          </div>
+
+        </form>
+          <div class="row form-block flex-column flex-sm-row">
+            <div class="col text-center text-sm-left"><form action="{% url 'new' %}" method="POST">{% csrf_token %}<input type="hidden" name="back" value="true"><button type="submit" class="btn btn-link text-muted"> <i class="fa-chevron-left fa mr-2"></i>Revenir</button></form>
+            </div>
+            <div class="col text-center text-sm-right"><button onclick="submitForm()" class="btn btn-primary px-3">
+
+                Etape suivante<i class="fa-chevron-right fa ml-2"></i></button></div>
+          </div>
+      </div>
+    <form action="{% url 'new' %}" method="POST" id="removeLangForm">
+    {% csrf_token %}
+    <input type="hidden" name="removeLang" value="true" id="removeIdLang">
+    </form>
+    </section>
+{% endblock %}
+{% block scripts %}
+    <script>
+    mixpanel.track("Student sign up step 2");
+    </script>
+    <script src="https://yedo.s3.eu-west-3.amazonaws.com/static/tus/js/datepicker.js">   </script>
+
+    <script src="https://yedo.s3.eu-west-3.amazonaws.com/static/tus/js/datepicker.fr.js">   </script>
+    <script>
+
+    function removeLang(id) {
+        document.getElementById("removeIdLang").value = id;
+        document.getElementById("removeLangForm").submit();
+    }
+
+    function addLanguage() {
+        document.getElementById("inputHiddenLang").value = "true";
+        document.getElementById("form_step2").submit();
+    }
+
+     var date = new Date();
+
+        date.setDate(date.getDate() + 45);
+        var myDatepicker = $('#calendar').datepicker(
+            {
+                minDate: new Date(),
+                maxDate: date,
+                position: 'bottom left',
+                language: 'fr',
+                onSelect: function (dateText, inst) {
+                    document.getElementById("datesChosen").value = dateText;
+              }
+
+            }).data('datepicker');
+        var dispos = [{% for j in student.jours_dispo.all %}new Date("{{ j.date.isoformat }}"),{% endfor %}];
+        myDatepicker.show();
+     myDatepicker.selectedDates = dispos;
+
+        function submitForm() {
+        document.getElementById('form_step2').submit();
+    }
+
+    function checkType() {
+        var e = document.getElementById('form_dispo_type');
+        var id = parseInt(e.options[e.selectedIndex].value);
+
+        document.getElementById("form_choose_days").style.display = "none";
+        document.getElementById("form_choose_soiree").style.display = "none";
+            document.getElementById("form_stage").style.display = "none";
+            document.getElementById("form_dispo_description").style.display = "none";
+        if (id === 1) {
+            // Montrer choix jours
+            document.getElementById("form_choose_days").style.display = "initial";
+        } else if (id === 2) {
+            // Montrer choix jour + journée et soirée
+            document.getElementById("form_choose_days").style.display = "initial";
+            document.getElementById("form_choose_soiree").style.display = "initial";
+        } else if (id === 3) {
+            // Montrer text Area
+
+            document.getElementById("form_dispo_description").style.display = "initial";
+        } else if (id === 4) {
+            // Montrer choix rémunéré ou non
+            document.getElementById("form_stage").style.display = "initial";
+        }
+        }
+      // ------------------------------------------------------- //
+      //   Inject SVG Sprite -
+      //   see more here
+      //   https://css-tricks.com/ajaxing-svg-sprite/
+      // ------------------------------------------------------ //
+      function injectSvgSprite(path) {
+
+          var ajax = new XMLHttpRequest();
+          ajax.open("GET", path, true);
+          ajax.send();
+          ajax.onload = function(e) {
+          var div = document.createElement("div");
+          div.className = 'd-none';
+          div.innerHTML = ajax.responseText;
+          document.body.insertBefore(div, document.body.childNodes[0]);
+          }
+      }
+      // to avoid CORS issues when viewing using file:// protocol, using the demo URL for the SVG sprite
+      // use your own URL in production, please :)
+      // https://demo.bootstrapious.com/directory/1-0/icons/orion-svg-sprite.svg
+      //- injectSvgSprite('icons/orion-svg-sprite.svg');
+      injectSvgSprite('https://demo.bootstrapious.com/directory/1-1/icons/orion-svg-sprite.svg');
+
+    </script>
+{% endblock %}

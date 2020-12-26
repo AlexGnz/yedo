@@ -1,0 +1,39 @@
+{% extends 'auth/auth_base.html' %}
+{% block body %}
+            <div class="mb-4"><img src="https://yedo.s3.eu-west-3.amazonaws.com/static/tus/img/yedo_logos/Symbol_Black.png" alt="..." style="max-width: 4rem;" class="img-fluid mb-4">
+              <h2>Inscription - Yedo.</h2>
+              <p class="text-muted">La plateforme de mise en relation entre étudiants jobistes et employeurs<br>Déjà un compte ? <a href="{% url 'auth_login' %}">Se connecter</a>
+                  {% if errors %}<br><span style="color: #E63422">{% for e in errors %}<br>{{ e }}{% endfor %}</span>{% endif %}</p>
+            {% if referral %}
+                <p class="text-primary">T'as été invité par {{ referral.prenom }} {{ referral.nom }}</p>
+
+            {% elif parrain %}
+                <p class="text-primary">T'as été invité par {{ parrain.name }}</p>
+            {% endif %}
+            </div>
+            <form class="form-validate" method="POST" action="{% url 'auth_signup' %}">
+                {% csrf_token %}
+                <input type="hidden" name="student" value="true">
+                {% if referral %}
+                <input type="hidden" name="referral" value="{{ referral.id }}">
+                {% endif %}
+            {% if parrain %}
+                <input type="hidden" name="parrain" value="{{ parrain.id }}">
+                {% endif %}
+
+              <div class="form-group">
+                <input name="email" id="loginUsername" type="email" placeholder="Adresse email" autocomplete="off" required data-msg="Sans ton email on sait pas te contacter ;)" class="form-control" {% if email_user %}value="{{ email_user }}" {% endif %}>
+              </div>
+              <div class="form-group">
+                <input name="password" id="loginPassword" placeholder="Mot de passe" type="password" required data-msg="Sérieusement? Pas de mot de passe?" class="form-control">
+              </div>
+                <div class="form-group">
+                <input name="password2" id="loginPassword2" placeholder="Confirme ton mot de passe" type="password" required data-msg="" class="form-control">
+              </div>
+              <button type="submit" class="btn btn-lg btn-block btn-primary">S'inscrire</button>
+              <p class="text-sm text-muted mt-3">En t'inscrivant, tu acceptes les <a href="{% url 'terms_and_conditions' %}">termes et conditions</a> et <a href="{% url 'privacy' %}">notre charte de vie privée</a>.</p>
+            </form>
+<script>
+    mixpanel.track("Signup view");
+    </script>
+{% endblock %}

@@ -1,0 +1,251 @@
+{% extends 'student-sign-up-steps/step_base.html' %}
+
+{% block body %}
+    <div style="height: 8px; top: 0px;" class="progress rounded-0 sticky-top">
+      <div role="progressbar" style="width: 100%" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" class="progress-bar"></div>
+    </div>
+    <section class="py-5">
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-7">
+            <h1 class="h2 mb-5">Récapitulatif de la commande</h1>
+            <div class="text-block">
+              <h6>Mentions légales</h6>
+              <br>
+              <p class="text-sm text-muted">En passant votre commande, vous acceptez les <a href="{% url 'conditions_vente' %}">Conditions Générales de Vente</a> de Yedo.</p>
+              <p class="text-sm text-muted">Veuillez consulter notre <a href="{% url 'privacy' %}">Charte Vie Privée</a> ainsi que nos <a href="{% url 'terms_and_conditions' %}">Conditions Générales d'Utilisation</a>.</p>
+              <br>
+                  <div class="custom-control custom-checkbox">
+                <input id="custom-check-1" type="checkbox" class="custom-control-input" onchange="checkCheckBox()">
+              <label for="custom-check-1" class="custom-control-label text-sm text-muted" data-toggle="tooltip" data-placement="right" title="" data-original-title="Veuillez cocher la case située ici à gauche">
+                  En procédant à un achat sur la Plateforme Yedo, vous reconnaissez que Yedo procèdera à l’exécution immédiate de la prestation à compter de la validation de sa commande. Vous renoncez par conséquent expressément à exercer votre droit de rétractation prévu aux articles VI.47 à 53 du Code de droit économique.</label>
+
+
+            </div>
+
+            </div>
+            <div class="row form-block flex-column flex-sm-row">
+              <div class="col text-center text-sm-left">
+                  <a href="{% url 'payment' %}" class="btn btn-link text-muted">
+                      <i class="fa-chevron-left fa mr-2"></i>Revenir</a>
+              </div>
+              <div class="col text-center text-sm-right" >
+                  <form method="POST" action="{% url 'payment' %}">
+                  {% csrf_token %}
+                      {% if abonnement %}
+                          <input type="hidden" name="plan_selected" value="2">
+                  <input type="hidden" name="nb_months" value="1" id="nbmonths_input">
+                      {% elif recharge %}
+                          <input type="hidden" name="plan_selected" value="1">
+                          <input type="hidden" name="form_amount_sent" value="true">
+                          <input type="hidden" name="amount" value="3" id="amount_input">
+                      {% endif %}
+                  <button type="submit" id="submitRecapButton" class="btn btn-primary px-3">
+
+                  Payer<i class="fa-chevron-right fa ml-2"></i></button>
+                  </form>
+                  </div>
+            </div>
+          </div>
+          <div class="col-lg-5 pl-xl-5">
+            <div class="card border-0 shadow">
+                {% if abonnement %}
+              <div class="card-body p-4">
+                <div class="text-block pb-3">
+                  <div class="media align-items-center">
+                    <div class="media-body">
+                      <h6>Abonnement "Illimité"</h6>
+                    </div>
+                  </div>
+                </div>
+                <div class="text-block py-3">
+                  <ul class="list-unstyled mb-0">
+                    <li class="mb-3"><i class="fas fa-users fa-fw text-muted mr-2"></i>Débloquages de coordonnées illimités</li>
+                      {% if employeur.is_premium %}
+                          <li class="mb-0"><i class="far fa-calendar fa-fw text-muted mr-2"></i>{{last_premium.end_date|date:"d F o"}}<i class="fas fa-arrow-right fa-fw text-muted mx-3"></i><span id="end_date">{{end_date|date:"d F o"}}</span></li>
+                          {% else %}
+                          <li class="mb-0"><i class="far fa-calendar fa-fw text-muted mr-2"></i>{{today|date:"d F o"}}<i class="fas fa-arrow-right fa-fw text-muted mx-3"></i><span id="end_date">{{end_date|date:"d F o"}}</span></li>
+                      {% endif %}
+
+                  </ul>
+                </div>
+                <div class="text-block pt-3 pb-0">
+                  <table class="w-100">
+                    <tbody>
+                      <tr>
+                        <th class="font-weight-normal py-2">Abonnement <span id="nb_months">1</span> mois</th>
+                        <td class="text-right py-2"><span id="price"></span>,00€</td>
+                          <div id="slider-snap" class="text-primary"></div>
+                  <div class="nouislider-values">
+                    <div class="min"><span id="nb_months_2"></span> mois</div>
+                  </div>
+                  <input type="hidden" name="nb_months" id="slider-snap-input-from">
+                  <input type="hidden" name="price" id="slider-snap-input-to">
+                      </tr>
+                    </tbody>
+                    <tfoot>
+                      <tr class="border-top">
+                        <th class="pt-3">Total</th>
+                        <td class="font-weight-bold text-right pt-3" id="total"><span id="price_total"></span>,00€</td>
+                      </tr>
+                    </tfoot>
+                  </table>
+                </div>
+              </div>
+                {% elif recharge %}
+                     <div class="card-body p-4">
+                <div class="text-block pb-3">
+                  <div class="media align-items-center">
+                    <div class="media-body">
+                      <h6>Ajout de crédit</h6>
+                    </div>
+                  </div>
+                </div>
+                <div class="text-block py-3">
+                  <ul class="list-unstyled mb-0">
+                    <li class="mb-3"><i class="fas fa-users fa-fw text-muted mr-2"></i>3€ par étudiant débloqué </li>
+                    
+                  </ul>
+                </div>
+                <div class="text-block pt-3 pb-0">
+                  <table class="w-100">
+                    <tbody>
+                      <tr>
+                        <th class="font-weight-normal py-2"><input id="amount" class="form-control" style="width: 100px" type="text" value="3" name="amount_key_up" onkeyup="amountChanged()"></th>
+                        <td class="text-right py-2"><span id="amount_subtot">3</span>€</td>
+                      </tr>
+                    </tbody>
+                    <tfoot>
+                      <tr class="border-top">
+                        <th class="pt-3">Total</th>
+                        <td class="font-weight-bold text-right pt-3"><span id="amount_tot">3</span>€</td>
+                      </tr>
+                    </tfoot>
+                  </table>
+                </div>
+              </div>
+                {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+{% endblock %}
+
+{% block scripts %}
+
+    <script>
+    window.onload = function() {
+  setup();
+};
+    function setup() {
+        document.getElementById("submitRecapButton").disabled = true;
+    }
+
+    function checkCheckBox() {
+        if (document.getElementById("custom-check-1").checked === true) {
+            document.getElementById("submitRecapButton").disabled = false;
+        } else {
+            document.getElementById("submitRecapButton").disabled = true;
+        }
+    }
+
+
+    function formatDate(date) {
+  var monthNames = [
+    "Janvier", "Février", "Mars",
+    "Avril", "Mai", "Juin", "Juillet",
+    "Août", "Septembre", "Octobre",
+    "Novembre", "Décembre"
+  ];
+
+  var day = date.getDate();
+  var monthIndex = date.getMonth();
+  var year = date.getFullYear();
+
+  return day + ' ' + monthNames[monthIndex] + ' ' + year;
+}
+
+var date;
+          {% if employeur.is_premium %}
+          date = new Date('{{ last_premium.end_date|date:'Y-m-d' }}');
+                          {% else %}
+          date = new Date();
+                      {% endif %}
+        console.log(date);
+    let copydate = new Date(date);
+    console.log("COPY", copydate);
+    var endDate = new Date(copydate.setMonth(copydate.getMonth()+1));
+    console.log("END", endDate);
+          document.getElementById("end_date").innerHTML = formatDate(endDate);
+
+
+var snapSlider = document.getElementById('slider-snap');
+
+      noUiSlider.create(snapSlider, {
+      	start: [0],
+      	snap: false,
+      	connect: true,
+          step: 3,
+      	range: {
+      		'min': 0,
+      		'max': 12
+      	}
+      });
+      var inputValues = [
+      	document.getElementById('slider-snap-input-from'),
+      	document.getElementById('slider-snap-input-to')
+      ];
+      snapSlider.noUiSlider.on('update', function( values, handle ) {
+          document.getElementById("nb_months").innerHTML = parseInt(values[handle]);
+          document.getElementById("nb_months_2").innerHTML = parseInt(values[handle]);
+          document.getElementById("nbmonths_input").value = parseInt(values[handle]);
+          if (parseInt(values[handle]) === 0){
+              document.getElementById("nb_months").innerHTML = 1;
+              document.getElementById("nb_months_2").innerHTML = 1;
+          document.getElementById("nbmonths_input").value = 1;
+              document.getElementById("price").innerHTML = 15;
+              document.getElementById("price_total").innerHTML = 15;
+          } else if (parseInt(values[handle]) === 3){
+              document.getElementById("price").innerHTML = 40;
+              document.getElementById("price_total").innerHTML = 40;
+          } else if (parseInt(values[handle]) === 6) {
+              document.getElementById("price").innerHTML = 60;
+              document.getElementById("price_total").innerHTML = 60;
+          } else if (parseInt(values[handle]) === 9) {
+              document.getElementById("price").innerHTML = 85;
+              document.getElementById("price_total").innerHTML = 85;
+          } else if (parseInt(values[handle]) === 12) {
+              document.getElementById("price").innerHTML = 100;
+              document.getElementById("price_total").innerHTML = 100;
+          }
+
+            copydate = new Date(date);
+          let endDate;
+          if (parseInt(values[handle]) === 0) {
+             endDate = new Date(copydate.setMonth(copydate.getMonth()+1));
+          } else {
+             endDate = new Date(copydate.setMonth(copydate.getMonth()+parseInt(values[handle])));
+          }
+
+          document.getElementById("end_date").innerHTML = formatDate(endDate);
+      	inputValues[handle].value = parseInt(values[handle]);
+      });
+      
+      function amountChanged() {
+          let value = parseInt(document.getElementById("amount").value);
+          if (value && value > 0) {
+        document.getElementById("amount_subtot").innerHTML = value;
+document.getElementById("submitRecapButton").disabled = false;
+        document.getElementById("amount_tot").innerHTML = value;
+        document.getElementById("amount_input").value = value;
+          } else {
+document.getElementById("amount_subtot").innerHTML = 0;
+    document.getElementById("submitRecapButton").disabled = true;
+        document.getElementById("amount_tot").innerHTML = 0;
+          }
+      }
+
+
+    </script>
+{% endblock %}

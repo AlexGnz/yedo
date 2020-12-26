@@ -1,0 +1,142 @@
+{% extends 'student-sign-up-steps/step_base.html' %}
+{% block body %}
+<div style="height: 8px; top: 0px;" class="progress rounded-0 sticky-top">
+      <div role="progressbar" style="width: 25%" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100" class="progress-bar"></div>
+    </div>
+    <section class="py-5">
+      <div class="container">
+        <p class="subtitle">Trouve un job d'étudiant en 5 clics !</p>
+        <h1 class="h2 mb-5"> Informations de base <span class="text-muted float-right">Étape 1</span>      </h1>
+        <form method="POST" action="{% url 'new' %}" id="step1entireform">
+            {% csrf_token %}
+          <div class="row form-block">
+            <div class="col-lg-4">
+              <h4>Nom et prénom</h4>
+              <p class="text-muted text-sm">{% if verification %}Vérifie les informations fournies au chatbot Messenger et passe à l'étape suivante si celles-ci sont correctes.{% else %}Complète tes informations de base, afin que tu puisses commencer à recevoir des propositions de job d'étudiants !<br> Tant que ton profil n'est pas complet, tu ne seras pas visible sur la plateforme.{% endif %}</p>
+            </div>
+            <div class="col-lg-7 ml-auto">
+              <div class="form-group"><input type="hidden" name="step1_form" value="true"></div>
+              <div class="form-group">
+                <label for="form_first_name" class="form-label">{% if error_prenom %}<span style="color: #ff5a5f">Ton prénom est requis</span>{% endif %}</label>
+                <input name="prenom" placeholder="Prénom" required id="form_first_name" class="form-control" value="{{ student.prenom }}">
+              </div>
+                <div class="form-group">
+                <label for="form_name" class="form-label">{% if error_nom %}<span style="color: #ff5a5f">Ton nom est requis</span>{% endif %}</label>
+                <input name="nom" id="form_name" required placeholder="Ton nom" class="form-control" value="{{ student.nom }}">
+              </div>
+            <div class="form-group">
+                <label for="form_phone" class="form-label">{% if sent %}Tu t'es trompé de numéro? Contacte nous à l'adresse hello@yedo.io{% else %}Vérifie ton numéro avant de valider !{% endif %}{% if error_phone %}<br><span style="color: #ff5a5f">Ton numéro de téléphone est requis</span>{% endif %}{% if error_wrong_phone %}<br><span style="color: #ff5a5f">Ce n'est pas un numéro de téléphone belge</span>{% endif %}{% if error_phone_used %}<br><span style="color: #ff5a5f">Numéro déjà utilisé sur yedo.</span>{% endif %}{% if error_code_sent %}<br><span style="color: #ff5a5f">Code envoyé</span>{% endif %}</label>
+            <div class="input-group">
+
+            <div class="input-group-prepend"><span id="basic-addon1" class="input-group-text">+32</span></div>
+                <input name="phone" id="form_phone" placeholder="474 10 20 30" required class="form-control" value="{{ student.phone|slice:"3:" }}" {% if sent %}disabled{% endif %}>
+            </div>
+              </div>
+            </div>
+          </div>
+          <div class="row form-block">
+            <div class="col-lg-4">
+              <h4>Localisation et permis</h4>
+            </div>
+            <div class="col-lg-7 ml-auto">
+              <!-- ZIP Code-->
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="form-group">
+                      <label for="form_zip" class="form-label">{% if error_zip %}<span style="color: #ff5a5f">Ton code postal est nécessaire</span>{% endif %}</label>
+              <select name="zip" id="form_zip" data-style="btn-selectpicker" data-size="4" data-actions-box="true" data-live-search="true" title="Ton code postal" class="selectpicker form-control">
+                {% for z in zips %}
+                    <option value="{{z.id}}" {% if student.zip_obj and z == student.zip_obj %}selected="selected"{% endif %}>{{z.value}}{% if z.name_fr %} - {{ z.name_fr }}{% endif %}</option>
+              {% endfor %}
+              </select>
+                  </div>
+                </div>
+              </div>
+            <div class="row">
+                    <div class="col-md-6">
+                      <div class="form-group">
+                          <div class="custom-control custom-radio">
+                          <input id="oui" name="permis" value="oui" type="radio" class="custom-control-input" {% if student.permis %}checked{% endif %}>
+                          <label for="oui" class="custom-control-label">J'ai mon permis B</label>
+                        </div>
+                          <div class="custom-control custom-radio">
+                          <input id="non" name="permis" value="non" type="radio" class="custom-control-input" {% if not student.permis %}checked{% endif %}>
+                          <label for="non" class="custom-control-label">Je n'ai pas mon permis B</label>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+            </div>
+          </div>
+            <div class="row form-block">
+                <div class="col-lg-4">
+                  <h4>Salaire et expérience(s)</h4>
+                  <p class="text-muted text-sm">Ajoute tes expériences passées et dis nous quel salaire tu souhaiterais toucher.
+                  {% if student.experiences.all|length > 0 %}
+                      <ul>
+                      {% for e in student.experiences.all %}
+                          <li>{{ e.duree }} semaine{% if e.duree > 1 %}s{% endif %} en tant que {{ e.fonction }}{% if e.employeur %} chez {{ e.employeur }}.{% else %}.{% endif %} {% if e.contact %}Contact : {{ e.contact }}.{% endif %}</li>
+                      {% endfor %}
+                      </ul>
+                      {% endif %}
+                  </p>
+                </div>
+                <div class="col-lg-7 ml-auto">
+                  <div class="row">
+                    <div class="col-md-6">
+                      <div class="form-group">
+                          {% if student.salary %}<input name="salary" id="form_salary" type="text" value="{{ student.salary|floatformat:2 }}" class="form-control">{% else %}<input name="salary" id="form_salary" type="text" placeholder="Salaire horaire souhaité (en €/h)" value="" class="form-control">{% endif %}
+
+                      </div>
+                    </div>
+                  </div>
+                <div class="row" id="experiencesForm">
+                 <div class="col-md-6">
+                    <div class="form-group">
+                <label for="form_description" class="form-label">
+                    Ajoute ici tes expériences passées.<br><span style="color: #ff5a5f; display: none;" id="experiencesadded-error">Tu dois au minimum renseigner ta fonction et la durée.</span>{% if error_description %}<br><span style="color: #ff5a5f">Il est indispensable que tu expliques tes expériences passées</span>{% endif %}</label>
+
+                    <input class="form-control" type="text" name="employeur" placeholder="Nom employeur">
+                    <input class="form-control mt-2" type="text" name="contact" placeholder="Personne de contact (email)">
+                    <input class="form-control mt-2" type="text" id="fonctionexp" name="job_type" placeholder="Fonction">
+                    <input class="form-control mt-2" type="number" id="nb_semaines_exp" name="nb_semaines" placeholder="Durée (en semaines)">
+                    <input type="hidden" name="added_experience" value="false" id="inputHiddenExp">
+                    <button class="btn btn-primary mt-2" type="button" onclick="addExperience()">Ajouter cette expérience</button>
+{#                <textarea name="description" placeholder="Nom employeur; 3 semaines; serveur;" id="form_description" rows="5" aria-describedby="descriptionHelp" class="form-control" placeholder="">{% if student.description %}{{ student.description }}{% endif %}</textarea>#}
+              </div>
+                </div>
+                </div>
+                </div>
+              </div>
+        </form>
+          <div class="row form-block flex-column flex-sm-row">
+            <div class="col text-center text-sm-left"><form action="{% url 'auth_logout' %}" method="POST">{% csrf_token %}<button type="submit" class="btn btn-link text-muted"> <i class="fa-chevron-left fa mr-2"></i>Se déconnecter</button></form>
+            </div>
+            <div class="col text-center text-sm-right"><button onclick="submitForm()" type="submit" class="btn btn-primary px-3">
+
+                Etape suivante<i class="fa-chevron-right fa ml-2"></i></button></div>
+          </div>
+
+      </div>
+    </section>
+
+    <script>
+    mixpanel.track("Student sign up step 1");
+    function submitForm() {
+        document.getElementById('step1entireform').submit();
+    }
+
+    function addExperience() {
+        if (document.getElementById('nb_semaines_exp').value.length > 0 && document.getElementById('fonctionexp').value.length > 0) {
+        document.getElementById("inputHiddenExp").value = "true";
+        document.getElementById("step1entireform").submit();
+        } else {
+            document.getElementById('experiencesadded-error').style.display = 'block';
+        }
+    }
+
+    {% if to_experience %}
+        document.getElementById('experiencesForm').scrollIntoView();
+    {% endif %}
+    </script>
+{% endblock %}

@@ -1,0 +1,39 @@
+{% extends 'student-sign-up-steps/step_base.html' %}
+{% block body %}
+<div style="height: 8px; top: 0px;" class="progress rounded-0 sticky-top">
+      <div role="progressbar" style="width: 100%" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" class="progress-bar"></div>
+    </div>
+    <section class="py-5 py-lg-6">
+      <div class="container text-center">
+        <p class="subtitle text-primary">Invite tes potes et gagne en visibilité sur Yedo.</p>
+        <h5 class="h5 mb-5">Copie ton lien personnel ci-dessous et envoie le à tes potes! Dès qu'ils ont finalisé leur inscription, tu auras un boost de visibilité pendant 1 mois !</h5>
+
+        <p class="mb-5"><img id="imgreferral" src="https://yedo.s3.eu-west-3.amazonaws.com/static/tus/img/illustration/undraw_referral_4ki4.svg" alt="" style="width: 300px;" class="img-fluid"></p>
+        <p id="thxtext" style="display: none;" class="text-muted mb-2">Merci {{ student.prenom }}, dès que ton/ta pote a finalisé son inscription, tu seras mis(e) en avant sur Yedo. !</p>
+
+
+          <p class="mb-2">
+              <input type="text"  id="inputurl" value="https://yedo.io/auth/signup/?best_friend={{ student.user.email }}"/><a id="copyButton" href="#" class="btn btn-primary mr-2 mb-2" style="width: 30%;">Copier mon lien</a>
+          </p>
+
+          <p class="mb-2" style="display: none;" id="lastPara">
+              <a href="https://www.facebook.com/Yedo-108155927239640/" class="btn btn-primary mr-2 mb-2">Like la page Facebook</a><a href="{% url 'student_profile' %}" class="btn btn-outline-muted mb-2">Retour à mon profil</a>
+          </p>
+      </div>
+    </section>
+    <script>
+    mixpanel.track("Referral page");
+
+    function copy() {
+  var copyText = document.querySelector("#inputurl");
+  copyText.select();
+  document.execCommand("copy");
+  //document.getElementById("inputurl").style.display = 'none';
+  document.getElementById("lastPara").style.display = 'block';
+  document.getElementById("copyButton").innerText = "Lien copié !";
+}
+
+document.querySelector("#imgreferral").addEventListener("click", copy);
+    document.querySelector("#copyButton").addEventListener("click", copy);
+    </script>
+{% endblock %}

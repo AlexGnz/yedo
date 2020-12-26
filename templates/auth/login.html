@@ -1,0 +1,30 @@
+{% extends 'auth/auth_base.html' %}
+{% block body %}
+            <div class="mb-4"><img src="https://yedo.s3.eu-west-3.amazonaws.com/static/tus/img/yedo_logos/Symbol_Black.png" alt="..." style="max-width: 4rem;" class="img-fluid mb-4">
+              <h2>Connexion - Yedo.</h2>
+                <p class="text-muted">La plateforme de mise en relation entre étudiants jobistes et employeurs
+                {% if errors %}<br><span style="color: #E63422">{% for e in errors %}<br>{{ e }}{% endfor %}</span>{% endif %}
+
+                {% if email_sent %}<br><span style="color:#3e9920">Nouveau mot de passe envoyé par email</span>{% endif %}</p>
+            </div>
+            <form class="form-validate" method="POST" action="{% url 'auth_login' %}">
+                {% csrf_token %}
+                <input type="hidden" name="sign_in" value="true">
+
+              <div class="form-group">
+                <input name="email" id="loginUsername" type="email" placeholder="Adresse email" autocomplete="off" required data-msg="Sans email, ça va etre compliqué de se connecter..." class="form-control" {% if email_user %}value="{{ email_user }}" {% endif %}>
+              </div>
+              <div class="form-group mb-4">
+                <div class="row">
+                  <div class="col-auto"><a href="{% url 'auth_password' %}" class="form-text small">Mot de passe oublié ?</a></div>
+                </div>
+                <input name="password" id="loginPassword" placeholder="Mot de passe" type="password" required data-msg="Please enter your password" class="form-control">
+              </div>
+              <button class="btn btn-lg btn-block btn-primary" type="submit">Se connecter</button>
+                <p class="text-center mt-3"><small class="text-muted text-center"><a href="{% url 'auth_signup' %}">S'inscrire</a><br><a href="{% url 'auth_signup_employeur' %}">Je suis un employeur</a></small></p>
+            </form>
+
+    <script>
+    mixpanel.track("Login view");
+    </script>
+{% endblock %}

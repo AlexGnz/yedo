@@ -1,0 +1,47 @@
+{% extends 'dashboard/base.html' %}
+
+
+{% block body %}
+    <div class="card shadow mb-4">
+            <div class="card-header py-3">
+              <h6 class="m-0 font-weight-bold text-primary">Les étudiants Yedo.</h6>
+            </div>
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                  <thead>
+                    <tr>
+                      <th>Prénom et nom</th>
+                      <th>Email</th>
+                      <th>Expérience</th>
+                      <th>Mis à jour</th>
+                        <th>Inscription</th>
+                    </tr>
+                  </thead>
+                  <tfoot>
+                    <tr>
+                      <th>Prénom et nom</th>
+                      <th>Email</th>
+                      <th>Expérience</th>
+                      <th>Mis à jour</th>
+                        <th>Inscription</th>
+                    </tr>
+                  </tfoot>
+                  <tbody>
+                    {% for s in students %}
+                    <tr>
+                      <td>{% if s.signup_step == 4 %}<button class="btn btn-success btn-circle btn-sm"><i class="fas fa-check"></i></button>{% endif %} {{s.prenom}} {{ s.nom }}</td>
+                      <td>{{s.user.email}}</td>
+                      <td>{% if s.exp %}{{ s.exp }} semaine{% if s.exp > 1 %}s{% endif %}{% else %} - {% endif %}</td>
+                      <td>{{ s.last_updated|date:"d/m/Y" }}</td>
+                    <td>{{ s.created_at|date:"d/m/Y" }}</td>
+                    </tr>
+                  {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+
+{% endblock %}

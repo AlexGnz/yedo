@@ -1,0 +1,406 @@
+{% extends 'base.html' %}
+{% block body %}
+<section class="py-7">
+      <div class="container">
+        <!-- Breadcrumbs -->
+        <div class="d-flex justify-content-between align-items-end mb-5">
+          <h1 class="hero-heading mb-0">
+              {% if student %}
+                  Vos demandes d'employeurs {% if student.photo %}<img src="{{student.photo.url}}" alt="{{student.prenom}}" class="avatar avatar avatar-border-white ml-3" style="object-fit: contain;">{% endif %}
+              {% endif %}
+              {% if employeur %}
+                  Vos demandes envoyées {% if employeur.photo %}<img src="{{employeur.photo.url}}" alt="{{employeur.name}}" class="avatar avatar avatar-border-white ml-3" style="object-fit: contain;">{% endif %}
+              {% endif %}</h1>
+        </div>
+        <div class="d-flex justify-content-between align-items-center flex-column flex-lg-row mb-5">
+          {% if demandes|length > 0 %}
+              <div class="mr-3">
+              <p class="mb-3 mb-lg-0">
+                  {% if employeur %}
+                      {% if employeur.is_premium %}
+                          Abonnement <b><span class="text-success">illimité</span></b><br>
+                          <a class="btn btn-primary btn-sm mt-3" href="{% url 'payment' %}">Prolonger</a>
+                          {% else %}
+                          <span style="font-size: 30px;font-weight: bold;">Crédits :</span>  <b><span class="text-success ml-1" style="font-size: 30px;font-weight: bold;"> {{ employeur.credits|floatformat }} €</span></b><br>
+                      <a class="btn btn-primary btn-sm mt-3" href="{% url 'payment' %}">Recharger votre compte</a>
+                          {% endif %}{% endif %}
+                  {% if student %}Vous avez <strong>{{ demandes | length }} demande{% if demande|length > 1 %}s{% endif %}</strong> d'employeurs <a href="{% url 'refer' %}"> <button class="btn btn-outline-primary px-3 mt-3">
+
+                Invite des potes pour gagner en visibilité<i class="fa-user-plus fa ml-2"></i></button></a><br>
+
+                  {% endif %}</p>
+          </div>
+          {% else %}
+              <div class="row">
+              <div class="{% if student %}col-lg-9{% endif %}">
+              <p class="mb-3 mb-lg-0">
+                  {% if employeur %}
+                      {% if employeur.is_premium %}
+                          Abonnement <b><span class="text-success">illimité</span></b><br>
+                          <a class="btn btn-primary btn-sm mt-3" href="{% url 'payment' %}">Prolonger</a>
+                          {% else %}
+                           <span style="font-size: 30px;font-weight: bold;">Crédits :</span>  <b><span class="text-success ml-1" style="font-size: 30px;font-weight: bold;"> {{ employeur.credits|floatformat }} €</span></b><br>
+                      <a class="btn btn-primary btn-sm mt-3" href="{% url 'payment' %}">Recharger votre compte</a>
+                          {% endif %}{% endif %}
+                  {% if student %}
+                      <span class="text-primary" style="font-weight: bold;">Pas de nouvelle demande</span><br><br>
+                      <b>Bienvenue sur Yedo.</b> Quelle est la prochaine étape ? Il n'y en a pas!<br><br>
+                      Fais ce qui te plait pendant qu'on s'occupe de te présenter à des employeurs! <br><br>
+                     <b>Attention :</b> Mets à jour tes disponibilités au minimum 1 fois par mois pour rester visible sur Yedo. <br><br>
+
+            <div class="col text-center">
+                <div class="form-group text-sm-left">
+                   <a href="{% url 'student_settings' %}"> <button class="btn btn-outline-primary px-3">
+
+                Mettre mes disponibilités à jour<i class="fa-chevron-right fa ml-2"></i></button></a><br>
+                    <a href="{% url 'refer' %}"> <button class="btn btn-outline-primary px-3 mt-3">
+
+                Invite des potes pour gagner en visibilité<i class="fa-user-plus fa ml-2"></i></button></a>
+
+                </div>
+
+
+            </div>
+                  {% endif %}
+                  </p>
+          </div>
+             {% if student %} <div class="col-lg-3">
+             {% if student.video %}
+                 <p>Ta vidéo de présentation</p>
+
+              <video width="100%" class="card" height="auto" autoplay controls style="border: solid; border-color: #5fb708;">
+
+  <source src="{{ student.video.url }}" type="video/mp4">
+Pas possible de lire de vidéo sur ce navigateur
+</video><br><form method="POST" action="{% url 'student_profile' %}">{% csrf_token %}
+             <input type="hidden" name="delete_video" value="true">
+             <button type="submit" class="btn btn-seconday">Supprimer ma vidéo</button>
+             </form>{% else %}
+                 <p class="text-primary"><b>Présente toi en vidéo !</b></p><p class="text-sm text-muted">Les étudiants qui se présentent en vidéo ont de plus grande chances de trouver un job !</p>
+                 <form method="POST" action="{% url 'student_profile' %}" enctype="multipart/form-data">{% csrf_token %}
+                 <input type="hidden" name="video_sent" value="true">
+                 <input type="file" class="form-control" name="video" placeholder="Upload ta vidéo"><br>
+                 <button type="submit" class="btn btn-outline-primary ">Ajouter</button>
+                 </form>
+                 {% endif %}
+              </div>{% endif %}</div>
+          {% endif %}
+        {% if demandes|length > 0 %}
+          <div class="text-center">
+
+          <form method="POST" id="sortForm" {% if employeur %}action="{% url 'employeur_profile' %}"{% else %}action="{% url 'student_profile' %}"{% endif %}>
+                    {% csrf_token %}
+              <label for="form_sort" class="form-label mr-2">Trier les demandes</label>
+            <select name="sort" id="form_sort" data-style="btn-selectpicker" title="" class="selectpicker mr-3 mb-3 mb-lg-0" onchange="changeSort()">
+              <option value="-date" {% if sort == '-date' %}selected{% endif %}>Nouvelles</option>
+              <option value="date" {% if sort == 'date' %}selected{% endif %}>Anciennes</option>
+              {% if employeur %}<option value="-is_paid" {% if sort == '-is_paid' %}selected{% endif %}>Payées</option>{% endif %}
+                {% if student %}<option value="student_accepted" {% if sort == 'student_accepted' %}selected{% endif %}>Acceptées</option>{% endif %}
+            </select>
+          </form>
+
+          </div>
+        {% endif %}
+        </div>
+        <div class="list-group shadow mb-5">
+        {% if student %}
+            {% for d in demandes %}
+                <div class="list-group-item list-group-item-action p-4">
+            <div class="row">
+              <div class="col-lg-4 align-self-center mb-4 mb-lg-0">
+                <div class="d-flex align-items-center mb-3">
+                  <h2 class="h5 mb-0">{{d.employeur.name}}</h2>
+                </div>
+                <p class="text-sm text-muted">{{d.adresse.rue}}, {{ d.adresse.numero }}. {{ d.adresse.zip.value }} {{ d.adresse.zip.name_fr }}</p>
+
+                      {% if d.is_paid and d.student_accepted %}
+                      <span class="badge badge-pill p-2 badge-success-light">Mise en contact effectuée</span>
+                      {% elif not d.is_paid and d.student_accepted %}
+                      <span class="badge badge-pill p-2 badge-warning-light">L'employeur vous contactera</span>
+                      {% elif d.is_paid and not d.student_accepted and not d.student_refused %}
+                      <span class="badge badge-pill p-2 badge-warning-light">Accepte ou refuse la demande</span>
+                      {% elif d.student_refused %}
+                      <span class="badge badge-pill p-2 badge-danger-light">Tu as refusé</span>
+                      {% elif d.is_deleted %}
+                      <span class="badge badge-pill p-2 badge-danger-light">Annulé par l'employeur</span>
+                      {% endif %}
+
+              </div>
+              <div class="col-lg-8">
+
+                <div class="row">
+                  <div class="col-6 col-md-4 col-lg-4 py-3 mb-3 mb-lg-0">
+                      {% if d.is_paid and d.student_accepted %}
+                           <h6 class="label-heading">Adresse email</h6>
+
+                    <p class="text-sm font-weight-bold">{{ d.employeur.user.email }}</p>
+                      {% else %}
+                           <h6 class="label-heading">Adresse email</h6>
+                    <p class="text-sm font-weight-bold blurdiv">unlock@yedo.io</p>
+                      {% endif %}
+                  {% if d.is_paid and d.student_accepted %}
+                           <h6 class="label-heading">Téléphone</h6>
+
+                    <p class="text-sm font-weight-bold">{{ d.employeur.phone }}</p>
+                      {% else %}
+                           <h6 class="label-heading">Téléphone</h6>
+                    <p class="text-sm font-weight-bold blurdiv">+32 400 00 00 00</p>
+                      {% endif %}
+                  </div>
+                  <div class="col-6 col-md-4 col-lg-2 py-3">
+                    {% if d.job_type %}
+                    <h6 class="label-heading">Type</h6>
+                    <p class="text-sm font-weight-bold">{{ d.job_type.nom }}</p>
+                  {% endif %}
+                      {% if d.dispo_type %}
+                    <h6 class="label-heading">Fréquence</h6>
+                    <p class="text-sm font-weight-bold mb-0">{{d.dispo_type.texte}}</p>
+                      {% endif %}
+                  {% if d.periode and not d.dispo_type or not d.job_type %}
+                    <h6 class="label-heading">Période</h6>
+                    <p class="text-sm font-weight-bold mb-0">{{d.periode.texte}}</p>
+                      {% endif %}
+                  </div>
+                  <div class="col-6 col-md-4 col-lg-3 py-3">
+                    <h6 class="label-heading">Commentaire</h6>
+                    {% if d.comment|length > 80 %}
+                      <a href="#" data-toggle="collapse" data-target="#comment{{ d.id }}" style="color: #5d5d5d">Voir le commentaire</a>
+                <!-- Modal-->
+                <div id="comment{{ d.id }}" class="collapse mt-2 mb-4">
+
+                <p class="text-sm font-weight-bol">
+                    {{ d.comment }}</p>
+
+          </div>
+    {% else %}
+    <p class="text-sm font-weight-bold">{{d.comment}}</p>
+                      {% endif %}
+
+
+                  </div>
+                  <div class="col-12 col-lg-3 align-self-center">
+                  {% if d.student_refused or d.student_accepted %}
+                      {% if d.student_accepted %}
+                          <button class="btn btn-outline-primary mr-4 mr-lg-0">
+
+
+                                      <i class="fa fa-check fa-fw mr-2"> </i> Accepté</button>
+                          {% elif d.student_refused %}
+                          <button class="btn btn-outline-danger mr-4 mr-lg-0">
+
+
+                                      <i class="fa fa-times fa-fw mr-2"> </i> Refusé</button>
+                          {% endif %}
+
+                  {% else %}
+ <form id="accept" action="{% url 'student_profile' %}" method="POST">
+                                  {% csrf_token %}
+                                  <input type="hidden" name="demande_id" value="{{ d.id }}">
+
+                                    <input type="hidden" name="accept" value="true">
+                                  <input type="hidden" name="sort" value="{{ sort }}">
+                                  <a href="#"><span onclick="toAccept()" class="btn btn-outline-primary mr-4 mr-lg-0">
+
+
+                                      <i class="fa fa-check fa-fw mr-2"> </i> Accepter</span></a></form><br>
+
+                          <form id="refuse" action="{% url 'student_profile' %}" method="POST">
+                                  {% csrf_token %}
+                                  <input type="hidden" name="demande_id" value="{{ d.id }}">
+
+                              <input type="hidden" name="refuse" value="true">
+                                  <input type="hidden" name="sort" value="{{ sort }}">
+                                  <a href="#"><span onclick="toRefuse()" class="btn btn-outline-danger mr-4 mr-lg-0">
+
+
+                                      <i class="fa fa-times fa-fw mr-2"> </i> Refuser</span></a></form>
+                  {% endif %}
+
+                  </div>
+                </div>
+              </div>
+            </div></div>
+            {% endfor %}
+        {% endif %}
+        {% if employeur %}
+            {% for d in demandes %}
+                <div class="list-group-item list-group-item-action p-4">
+            <div class="row">
+            <div class="card-img-overlay-top text-right">
+                <form id="cancelForm" method="POST" action="{% url 'employeur_profile' %}">
+                   {% csrf_token %}
+                   <input type="hidden" name="cancel" value="{{ d.id }}">
+                </form>
+                {% if not d.student_accepted and not d.is_paid and not d.is_deleted %}
+                <a href="#" onclick="toCancel()" class="position-relative z-index-40">
+                    <i class="material-icons" style="color: #E63422">
+cancel
+</i>
+                </a>
+                {% endif %}
+            </div>
+              <div class="col-lg-4 align-self-center mb-4 mb-lg-0">
+                <div class="d-flex align-items-center mb-3">
+                  <h2 class="h5 mb-0"><a href="{% url 'student_details' d.student.id %}" class="text-black">{{ d.student.prenom }}{% if d.is_paid and d.student_accepted %} {{ d.student.nom }}{% endif %}</a></h2><img {% if d.student.photo %} src="{{d.student.photo.url}}" {% else %} src="https://yedo.s3.eu-west-3.amazonaws.com/static/tus/img/unknown.jpg" {% endif %}alt="{{d.student.prenom}}" class="avatar avatar-sm avatar-border-white ml-3">
+                </div>
+                <p class="text-sm text-muted">{{d.adresse.rue}}, {{ d.adresse.numero }}. {{ d.adresse.zip.name_fr }}</p>
+
+                  {% if d.is_paid and d.student_accepted %}
+                      <span class="badge badge-pill p-2 badge-success-light">Accepté et payé</span>
+                      {% elif not d.is_paid and d.student_accepted %}
+                      <span class="badge badge-pill p-2 badge-warning-light">En attente de paiement</span>
+                      {% elif d.is_paid and not d.student_accepted and not d.student_refused %}
+                      <span class="badge badge-pill p-2 badge-warning-light">En attente de l'étudiant</span>
+                      {% elif d.student_refused and d.is_paid %}
+                      <span class="badge badge-pill p-2 badge-danger-light">Refusé par l'étudiant, vous avez été remboursé</span>
+                      {% elif d.student_refused and not d.is_paid %}
+                       <span class="badge badge-pill p-2 badge-danger-light">Refusé par l'étudiant</span>
+                      {% elif d.is_deleted %}
+                       <span class="badge badge-pill p-2 badge-danger-light">Vous avez annulé</span>
+                      {% endif %}
+              </div>
+              <div class="col-lg-8">
+                <div class="row">
+                  <div class="col-6 col-md-4 col-lg-4 py-3 mb-3 mb-lg-0">
+                      {% if d.is_paid and d.student_accepted %}
+                           <h6 class="label-heading">Adresse email</h6>
+
+                    <p class="text-sm font-weight-bold">{{ d.student.user.email }}</p>
+                      {% else %}
+                           <h6 class="label-heading">Adresse email</h6>
+                    <p class="text-sm font-weight-bold blurdiv">unlock@yedo.io</p>
+                      {% endif %}
+                  {% if d.is_paid and d.student_accepted %}
+                           <h6 class="label-heading">Téléphone</h6>
+
+                    <p class="text-sm font-weight-bold">{{ d.student.phone }}</p>
+                      {% else %}
+                           <h6 class="label-heading">Téléphone</h6>
+                    <p class="text-sm font-weight-bold blurdiv">+32 400 00 00 00</p>
+                      {% endif %}
+                  </div>
+                  <div class="col-6 col-md-4 col-lg-2 py-3">
+                  {% if d.job_type %}
+                    <h6 class="label-heading">Type</h6>
+                    <p class="text-sm font-weight-bold">{{ d.job_type.nom }}</p>
+                  {% endif %}
+                      {% if d.dispo_type %}
+                    <h6 class="label-heading">Fréquence</h6>
+                    <p class="text-sm font-weight-bold mb-0">{{d.dispo_type.texte}}</p>
+                      {% endif %}
+                  {% if d.periode and not d.dispo_type or not d.job_type %}
+                    <h6 class="label-heading">Période</h6>
+                    <p class="text-sm font-weight-bold mb-0">{{d.periode.texte}}</p>
+                      {% endif %}
+
+                  </div>
+                {% if d.comment %}
+                  <div class="col-6 col-md-4 col-lg-3 py-3">
+                    <h6 class="label-heading">Commentaire</h6>
+
+{% if d.comment|length > 80 %}
+                      <a href="#" data-toggle="collapse" data-target="#comment{{ d.id }}" style="color: #5d5d5d">Voir le commentaire</a>
+                        <!-- Modal-->
+                        <div id="comment{{ d.id }}" class="collapse mt-2 mb-4">
+
+                        <p class="text-sm font-weight-bol">
+                            {{ d.comment }}</p>
+
+                        </div>
+                        {% else %}
+                        <p class="text-sm font-weight-bold">{{d.comment}}</p>
+                      {% endif %}
+
+
+                  </div>
+                {% endif %}
+                  <div class="col-12 col-lg-3 align-self-center">
+                      {% if d.is_paid %}
+                              <button class="btn btn-outline-primary mr-4 mr-lg-0">
+
+
+                                      <i class="fa fa-check fa-fw mr-2"> </i> Déjà payé</button>
+                      {% else %}
+                              {% if d.student_accepted %}
+                                  {% if employeur.credits >= 3 %}
+                                      <br class="d-none d-lg-block">
+                                  <form id="unlockForm" action="{% url 'employeur_profile' %}" method="POST">
+                                  {% csrf_token %}
+                                  <input type="hidden" name="unlock" value="{{ d.id }}">
+                                  <input type="hidden" name="sort" value="{{ sort }}">
+                                  <a href="#"><span onclick="toUnlock()" class="btn btn-outline-primary mr-4 mr-lg-0 btn-sm text-sm">
+
+
+                                      <i class="fa fa-check fa-fw mr-2"> </i>Débloquer (-3€)</span></a></form>
+
+                                    {% else %}
+                                      <br class="d-none d-lg-block">
+                                      <form id="payForm" action="{% url 'employeur_profile' %}" method="POST">
+                                      {% csrf_token %}
+                                  <input type="hidden" name="pay" value="{{ d.id }}">
+                                  <input type="hidden" name="sort" value="{{ sort }}">
+                                  <a href="#"><span onclick="toPay()" class="btn btn-outline-primary mr-4 mr-lg-0 btn-sm text-sm">
+
+
+                                      <i class="fa fa-check fa-fw mr-2"> </i> Payer maintenant</span></a></form>
+                                      {% endif %}
+                                  {% elif d.is_deleted %}
+                              {% else %}
+                               <br class="d-none d-lg-block">
+                                  <br class="d-none d-lg-block">
+                                  {% if employeur.credits >= 3 %}
+                                  <form id="unlockForm" action="{% url 'employeur_profile' %}" method="POST">
+                                  {% csrf_token %}
+                                  <input type="hidden" name="unlock" value="{{ d.id }}">
+                                  <input type="hidden" name="sort" value="{{ sort }}">
+                                  <a href="#"><span onclick="toUnlock()" class="btn btn-outline-primary mr-4 mr-lg-0 btn-sm text-sm">
+
+
+                                      <i class="fa fa-check fa-fw mr-2"> </i> Débloquer (-3€)</span></a></form>
+
+                                    {% else %}
+                                      <form id="payForm" action="{% url 'employeur_profile' %}" method="POST">
+                                      {% csrf_token %}
+                                  <input type="hidden" name="pay" value="{{ d.id }}">
+                                  <input type="hidden" name="sort" value="{{ sort }}">
+                                  <a href="#"><span onclick="toPay()" class="btn btn-outline-primary mr-4 mr-lg-0 btn-sm text-sm">
+                                      <i class="fa fa-check fa-fw mr-2"> </i>Payer maintenant</span></a></form>
+                                      {% endif %}
+                              {% endif %}
+
+                      {% endif %}
+                  </div>
+                </div>
+              </div>
+            </div></div>
+            {% endfor %}
+        {% endif %}
+        </div>
+      </div>
+    </section>
+{% endblock %}
+
+{% block scripts %}
+    <script>
+     function changeSort() {
+          document.getElementById("sortForm").submit();
+      }
+      function toUnlock() {
+          document.getElementById("unlockForm").submit();
+      }
+      function toPay() {
+          document.getElementById("payForm").submit();
+      }
+      function toRefuse() {
+          document.getElementById("refuse").submit();
+      }
+      function toAccept() {
+          document.getElementById("accept").submit();
+      }
+      function toCancel() {
+         document.getElementById("cancelForm").submit();
+      }
+
+    </script>
+
+{% endblock %}

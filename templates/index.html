@@ -1,0 +1,188 @@
+{% extends 'base.html' %}
+{% block padding-top %}
+    style="padding-top: 72px;"
+{% endblock %}
+{% block body %}
+<section style="background-image: url(https://yedo.s3.eu-west-3.amazonaws.com/static/tus/img/photo/photo-1525610553991-2bede1a236e2.jpg);" class="d-flex align-items-center dark-overlay bg-cover">
+      <div class="container py-6 py-lg-7 text-white overlay-content text-center">
+        <div class="row">
+          <div class="col-xl-10 mx-auto">
+            <h1 class="display-3 font-weight-bold text-shadow">Yedo : les meilleurs étudiants belges</h1>
+            <p class="text-lg text-shadow">Avec Yedo, trouvez facilement les meilleurs étudiants jobistes près de chez vous !</p>
+          </div>
+        </div>
+      </div>
+    </section>
+    <div class="container">
+      <div class="search-bar rounded p-3 p-lg-4 position-relative mt-n5 z-index-20">
+        <form action="{% url 'search_students' %}" method="POST">
+            {% csrf_token %}
+          <div class="row">
+            <div class="col-lg-7 d-flex align-items-center form-group">
+            <select name="jobs" id="form_jobs" multiple data-style="btn-selectpicker" data-size="4" data-live-search="true" data-selected-text-format="count &gt; 3" title="Types de jobs" class="selectpicker form-control border-0 shadow-0 large-tooltip">
+                {% for j in jobs_type %}
+
+
+                    <option value="{{j.id}}" {% if 'jobs' in request.POST and j in jobs_selected %}selected="selected"{% endif %}>{{j.nom}}</option>
+
+
+              {% endfor %}
+              </select>
+            </div>
+            <!--<div class="col-md-6 col-lg-3 d-flex align-items-center form-group">
+              <div class="input-label-absolute input-label-absolute-right w-100">
+                <label for="location" class="label-absolute"><i class="fa fa-crosshairs"></i>
+                  <div class="sr-only">City</div>
+                </label>
+                <input type="text" name="location" placeholder="Location" id="location" class="form-control border-0 shadow-0">
+              </div>
+            </div>-->
+          <div class="col-md-6 col-lg-3 d-flex align-items-center form-group no-divider">
+              <select name="dispos" title="Disponibilités" multiple data-style="btn-selectpicker" data-live-search="true" data-selected-text-format="count &gt; 1" class="selectpicker form-control border-0 shadow-0 large-tooltip">
+                  {% for d in dispos_type %}
+                      <option value="{{d.intern_id}}">{{d.texte}}</option>
+                  {% endfor %}
+              </select>
+            </div>
+            <div class="col-lg-2 form-group mb-0">
+              <button type="submit" class="btn btn-primary btn-block h-100">Rechercher</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+    <section class="pt-4 pb-6">
+      <div class="container">
+        <div class="text-center pb-lg-4">
+          <h2 class="mb-5 mt-5">Les derniers étudiants inscrits</h2>
+        </div>
+      </div>
+      <div class="container-fluid">
+        <!-- Slider main container-->
+        <div class="swiper-container swiper-container-mx-negative items-slider-full px-lg-5">
+          <!-- Additional required wrapper-->
+          <div class="swiper-wrapper pb-5">
+            <!-- Slides-->
+              {% for s in students %}
+                   <div class="swiper-slide h-auto px-2">
+              <!-- venue item-->
+              <div data-marker-id="{{s.id}}" class="w-100 h-100">
+                <div class="card h-100 border-0 shadow">
+                {% if s.photo %}
+                    <div style="background-image: url({% if s.thumbnail %}{{ s.thumbnail }}{% else %}{{ s.photo.url }}{% endif %}); min-height: 200px;object-fit: contain;" class="card-img-top overflow-hidden dark-overlay bg-cover">
+                    <!--img.img-fluid(src="#{imgBasePath}#{val.image}" alt="#{val.name}")--><a href="{% url 'student_details' s.id %}" class="tile-link"></a>
+                    <div class="card-img-overlay-bottom z-index-20">
+                      <h4 class="text-white text-shadow">{{s.prenom}} {% if employeur.is_premium %}{{ s.nom }}{% endif %} {% if s in employeur.favoris.all %}<i style="color:#ff5a5f" class="fa fa-heart"></i>{% endif %}</h4>
+                      <p class="mb-2 text-xs"><i class="fa fa-star text-gray-200"></i><i class="fa fa-star text-gray-200"></i><i class="fa fa-star text-gray-200"></i><i class="fa fa-star text-gray-200"></i><i class="fa fa-star text-gray-200"></i> <span class="text-warning text-xs"> <i class="fas fa-lock"></i> À venir</span>
+                      </p>
+                    </div>
+                    <div class="card-img-overlay-top d-flex justify-content-between align-items-center">
+                      <div class="badge badge-transparent badge-pill px-3 py-2">{{s.exp}} semaine{% if s.exp > 1 %}s{% endif %} d'expérience</div>
+{#                        <a href="javascript: void();" class="card-fav-icon position-relative z-index-40">#}
+{#                        <svg class="svg-icon text-white">#}
+{#                          <use xlink:href="#heart-1"> </use>#}
+{#                        </svg></a>#}
+                    </div>
+                  </div>
+                {% else %}
+                    <div style="background-image: url(https://yedo.s3.eu-west-3.amazonaws.com/static/tus/img/unknown.jpg); min-height: 200px;object-fit: contain;" class="card-img-top overflow-hidden dark-overlay bg-cover">
+                    <!--img.img-fluid(src="#{imgBasePath}#{val.image}" alt="#{val.name}")--><a href="{% url 'student_details' s.id %}" class="tile-link"></a>
+                    <div class="card-img-overlay-bottom z-index-20">
+                      <h4 class="text-white text-shadow">{{s.prenom}} {% if employeur.is_premium %}{{ s.nom }}{% endif %} {% if s in employeur.favoris.all %}<i style="color:#ff5a5f" class="fa fa-heart"></i>{% endif %}</h4>
+                      <p class="mb-2 text-xs"><i class="fa fa-xs fa-star text-gray-200"></i><i class="fa fa-xs fa-star text-gray-200"></i><i class="fa fa-xs fa-star text-gray-200"></i><i class="fa fa-xs fa-star text-gray-200"></i><i class="fa fa-xs fa-star text-gray-200 mr-2"></i> <span class="text-warning text-xs"> <i class="fas fa-xs fa-lock"></i> A venir</span>
+                    </p>
+                    </div>
+                    <div class="card-img-overlay-top d-flex justify-content-between align-items-center">
+                      <div class="badge badge-transparent badge-pill px-3 py-2">{{s.exp}} semaine{% if s.exp > 1 %}s{% endif %} d'expérience</div>
+                    </div>
+                  </div>
+                {% endif %}
+
+                  <div class="card-body">
+{#                    {% if s.description %}<p class="text-sm text-muted mb-3"> {% if s.description|length > 100 %}{{ s.description|slice:":100" }}...{% else %}{{ s.description }}{% endif %}</p>{% endif %}#}
+                    <p class="text-sm text-muted mb-1">{{ s.salary }} €/h</p>
+{#                    <p class="text-sm mb-0">#}
+{#                    <form method="POST" action="{% url 'search_students' %}" id="jobs_form">#}
+{#                  {% csrf_token %}#}
+{#                  <input type="hidden" name="jobs" value="" id="jobs_type_input">#}
+{#                        {% for j in s.jobs_wanted.all %}#}
+{#                            {% if forloop.last %}#}
+{##}
+{#                                <a href="#" style="color:#5d5d5d" class="mr-1 text-sm" onclick="validateJobsTypeForm({{ j.id }})">{{ j.nom }}.</a>#}
+{##}
+{#                            {% else %}#}
+{##}
+{#                                <a href="#" style="color:#5d5d5d" class="mr-1 text-sm" onclick="validateJobsTypeForm({{ j.id }})">{{ j.nom }},</a>#}
+{##}
+{#                            {% endif %}#}
+{#                        {% endfor %}#}
+{#                  </form>#}
+{#                    </p>#}
+                  </div>
+                </div>
+              </div>
+            </div>
+              {% endfor %}
+          </div>
+          <!-- If we need pagination-->
+          <div class="swiper-pagination"></div>
+        </div>
+        <div class="text-center mt-5"><form method="POST" action="{% url 'search_students' %}">{% csrf_token %}<input type="hidden" name="all" value="true"><button type="submit" class="btn btn-outline-primary">Voir tous les étudiants</button></form></div>
+      </div>
+    </section>
+    <section class="py-6 bg-gray-100" >
+      <div class="container">
+        <div class="pb-lg-4">
+          <h2 class="mb-5 text-center">Pourquoi Yedo ?</h2>
+        </div>
+        <div class="row">
+          <div class="col-sm-6 col-lg-4 mb-3 mb-lg-0">
+            <div class="px-0 pr-lg-3">
+              <div class="icon-rounded mb-3 bg-primary">
+                <i class="material-icons">
+gps_not_fixed
+</i>
+              </div>
+              <h3 class="h6 text-uppercase">Liste d'étudiants</h3>
+              <p class="text-muted">Trouvez les étudiants idéaux sur base des critères de votre choix.</p>
+            </div>
+          </div>
+          <div class="col-sm-6 col-lg-4 mb-3 mb-lg-0">
+            <div class="px-0 pr-lg-3">
+              <div class="icon-rounded mb-3 bg-primary">
+                <i class="material-icons">
+attach_money
+</i>
+              </div>
+              <h3 class="h6 text-uppercase">Tarifs avantageux</h3>
+              <p class="text-muted">Débloquez les coordonnées des étudiants selon un abonnement flexible ou un paiement unique (3 €)</p>
+            </div>
+          </div>
+          <div class="col-sm-6 col-lg-4 mb-3 mb-lg-0">
+            <div class="px-0 pr-lg-3">
+              <div class="icon-rounded mb-3 bg-primary">
+                <i class="material-icons">
+contact_phone
+</i>
+              </div>
+              <h3 class="h6 text-uppercase">Mise en relation</h3>
+              <p class="text-muted">Envoyez votre offre de travail à l'étudiant. Votre compte ne sera débité que si l'étudiant accepte.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+<script>
+    mixpanel.track("Home page");
+    </script>
+    <script>
+    function validateJobsTypeForm(id) {
+        document.getElementById("jobs_type_input").value = id;
+        document.getElementById("jobs_form").submit();
+    }
+    var options = {
+        container: 'body'
+    }
+    </script>
+
+{% endblock %}

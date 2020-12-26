@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ parrain.name | title }}</title>
+</head>
+<style>
+    @font-face {
+font-family: "Aileron heavy";
+src: url("https://yedo.s3.eu-west-3.amazonaws.com/static/tus/fonts/Aileron-Heavy.otf");
+}
+    @font-face {
+font-family: "Aileron thin";
+src: url("https://yedo.s3.eu-west-3.amazonaws.com/static/tus/fonts/Aileron-Thin.otf");
+}
+    .center {
+  margin: auto;
+  width: 50%;
+  padding: 20%;
+        text-align: center;
+}
+.link {
+  position: fixed;
+  right: 100px;
+  top: 0;
+  left: 0;
+  padding: 1rem;
+  text-align: left;
+}
+.logout {
+  position: fixed;
+  right: 0;
+  top: 0;
+  left: 100px;
+  padding: 1rem;
+  text-align: right;
+}
+
+    .footer {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  padding: 1rem;
+  text-align: right;
+}
+
+</style>
+<body style="background-color: #5fb708">
+<div class="logout"><a href="{% url 'auth_logout' %}" style="font-family: 'Aileron thin'; color: white; text-decoration: none;" >Se déconnecter</a></div>
+
+<div class="link" style="font-family: 'Aileron heavy'; color: white">Mon lien : https://yedo.io/p/{{ parrain.code }}</div>
+<div class="center" >
+    <div style="color: white;font-family: 'Aileron heavy'; font-size: 40px">
+        {% if inscrits == 0 %}
+            Aucun étudiant inscrit avec ton lien
+        {% elif inscrits == 1 %}
+            {{ inscrits }} étudiant inscrit
+        {% else %}
+            {{ inscrits }} étudiants inscrits
+        {% endif %}
+
+    </div><br>
+    <div style="color: white;font-family: 'Aileron thin'; font-size: 20px">
+        {% if nb_inscrits_pas_termine == 0 %}
+            Tous les étudiants ont terminé leur inscription
+        {% elif nb_inscrits_pas_termine == 1 %}
+            {{ nb_inscrits_pas_termine }} étudiant n'a pas terminé son inscription
+        {% else %}
+            {{ nb_inscrits_pas_termine }} étudiants n'ont pas terminé leur inscription
+        {% endif %}
+
+    </div><br>
+<div></div>
+</div>
+
+<div class="footer" style="font-family: 'Aileron heavy'; color: white">yedo.</div>
+
+
+</body>
+</html>

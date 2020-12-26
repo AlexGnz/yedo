@@ -1,0 +1,176 @@
+{% extends 'dashboard/base.html' %}
+
+
+{% block body %}
+{% if not add_language_text and not add_language_level %}
+        <div class="row">
+        <div class="col-lg-6">
+
+
+    <div class="card shadow mb-4">
+            <div class="card-header py-3">
+              <h6 class="m-0 font-weight-bold text-primary">Les niveaux linguistiques
+                  <form method="POST" action="{% url 'dashboard_all_languages' %}">
+                      {% csrf_token %}
+                      <input type="hidden" name="add_language_level">
+                      <button type="submit" class="btn btn-primary"><i class="fa fa-plus"></i></button>
+                  </form>
+              </h6>
+            </div>
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="table table-bordered" width="100%" cellspacing="0">
+                  <thead>
+                    <tr>
+                      <th>Nom</th>
+                        <th>Niveau</th>
+                        <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tfoot>
+                    <tr>
+                      <th>Nom</th>
+                        <th>Niveau</th>
+                        <th>Actions</th>
+                    </tr>
+                  </tfoot>
+                  <tbody>
+                    {% for d in languages_levels %}
+                    <tr>
+                      <td>{{d.value_fr}}</td>
+                        <td>{{ d.number }}</td>
+                    <td>
+                        <form action="{% url 'dashboard_all_languages' %}" method="POST">
+                            {% csrf_token %}
+                            <input type="hidden" name="delete_level" value="true">
+                            <input type="hidden" name="level_id" value="{{ d.id }}"><button type="submit" class="btn btn-primary"><i class="fa fa-trash"></i></button></form>
+
+                    </td>
+                    </tr>
+                  {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-6">
+
+
+    <div class="card shadow mb-4">
+            <div class="card-header py-3">
+              <h6 class="m-0 font-weight-bold text-primary">Les différentes langues
+                  <form method="POST" action="{% url 'dashboard_all_languages' %}">
+                      {% csrf_token %}
+                      <input type="hidden" name="add_language_text">
+                      <button type="submit" class="btn btn-primary"><i class="fa fa-plus"></i></button>
+                  </form></h6>
+            </div>
+            <div class="card-body">
+              <div class="table-responsive">
+               <table class="table table-bordered" width="100%" cellspacing="0">
+                  <thead>
+                    <tr>
+                      <th>Nom</th>
+                        <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tfoot>
+                    <tr>
+                      <th>Nom</th>
+                        <th>Actions</th>
+                    </tr>
+                  </tfoot>
+                  <tbody>
+                    {% for d in languages_text %}
+                    <tr>
+                      <td>{{d.value_fr}}</td>
+                    <td>
+                        <form action="{% url 'dashboard_all_languages' %}" method="POST">
+                            {% csrf_token %}
+                            <input type="hidden" name="delete_text" value="true">
+                            <input type="hidden" name="text_id" value="{{ d.id }}"><button type="submit" class="btn btn-primary"><i class="fa fa-trash"></i></button></form>
+
+                    </td>
+                    </tr>
+                  {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        </div>
+    {% endif %}
+
+{% if add_language_level %}
+<div class="row">
+<div class="col-lg-6">
+    <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                  <h6 class="m-0 font-weight-bold text-primary"> Ajouter un niveau linguistique</h6>
+                </div>
+                <div class="card-body">
+                  <form method="POST" action="{% url 'dashboard_all_languages' %}" id="adding_form">
+                  {% csrf_token %}
+        <input  type="hidden" name="add_language_level" value="true">
+                      <input  type="hidden" name="sent" value="true">
+                      <input  type="hidden" name="quit" value="false" id="quitting_input">
+        <input class="form-control" type="text" id="add_input_id" placeholder="Nom" name="value_fr"><br>
+
+        <input class="form-control" type="number" placeholder="Ordre (classement des niveaux)" id="level" name="number"><br>
+        <button class="form-control" type="submit" class="btn btn-primary">Sauver et continuer <i class="fa fa-check"></i></button><br>
+
+      <button class="form-control" onclick="validateAndQuit()" class="btn btn-primary">Sauver et quitter <i class="fa fa-check"></i></button><br></form>
+      <form method="POST" action="{% url 'dashboard_all_languages' %}">{% csrf_token %}<button class="form-control" type="submit" class="btn btn-primary">Quitter sans sauver <i class="fa fa-times"></i></button></form>
+
+
+                </div>
+              </div>
+</div>
+</div>
+
+{% elif add_language_text %}
+
+        <div class="row">
+<div class="col-lg-6">
+    <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                  <h6 class="m-0 font-weight-bold text-primary"> Ajouter une langue</h6>
+                </div>
+                <div class="card-body">
+                  <form method="POST" action="{% url 'dashboard_all_languages' %}" id="adding_form">{% csrf_token %}
+        <input  type="hidden" name="add_language_text" value="true">
+                       <input  type="hidden" name="sent" value="true">
+                      <input  type="hidden" name="quit" value="false" id="quitting_input">
+        <input class="form-control" type="text" id="add_input_id" name="value_fr" placeholder="Langue"><br>
+
+      <button class="form-control" type="submit" class="btn btn-primary">Sauver et continuer <i class="fa fa-check"></i></button><br>
+
+      <button class="form-control" onclick="validateAndQuit()" class="btn btn-primary">Sauver et quitter <i class="fa fa-check"></i></button><br>
+                      </form>
+      <form method="POST" action="{% url 'dashboard_all_languages' %}">{% csrf_token %}<button class="form-control" type="submit" class="btn btn-primary">Quitter sans sauver <i class="fa fa-times"></i></button></form>
+                </div>
+              </div>
+</div>
+</div>
+
+    {% endif %}
+
+{% endblock %}
+
+{% block scripts %}
+
+    <script>
+    document.getElementById("add_input_id").focus();
+    function validateAndQuit() {
+        document.getElementById("quitting_input").value = 'true';
+        document.getElementById('adding_form').submit();
+    }
+
+
+
+    </script>
+
+{% endblock %}

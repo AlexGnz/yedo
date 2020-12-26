@@ -1,0 +1,380 @@
+{% extends 'base.html' %}
+
+{% block body %}
+
+    <section style="background-image: url({{ background_picture }});" class="pt-7 pb-5 d-flex align-items-end dark-overlay bg-cover">
+      <div class="container overlay-content">
+        <div class="d-flex justify-content-between align-items-start flex-column flex-lg-row align-items-lg-end">
+          <div class="text-white mb-4 mb-lg-0">
+              {% if student_details.exp > 0 %}<div class="badge badge-pill badge-transparent px-3 py-2 mb-4"><b>{{student_details.exp}}</b> semaine{% if student_details.exp > 1 %}s{% endif %} d'expérience</div>{% endif %}
+            <h1 class="text-shadow verified"> {% if student_details.photo %}{% if student_details.thumbnail %}<img src="{{student_details.thumbnail}}" class="avatar avatar-xxl p-2 avatar-border-white mr-2" style="object-fit: contain;" />{% else %}<img src="{{student_details.photo.url}}" class="avatar avatar-xxl p-2 avatar-border-white mr-2" style="object-fit: contain;" />{% endif %}{% else %}<img src="https://yedo.s3.eu-west-3.amazonaws.com/static/tus/img/unknown.jpg" class="avatar avatar-xxl p-2 avatar-border-white mr-2" style="object-fit: contain;" />{% endif %}
+                {{student_details.prenom|title}} {% if student_details.age %}, {{ student_details.age }} ans{% endif %}
+                {% if student_details in employeur.favoris.all %}<span style="color:#ff5a5f"><i class="fa fa-heart"></i></span>{% endif %}</h1>
+            <p><i class="fa-map-marker-alt fas mr-2"></i>
+                {% if student_details.zip_obj %}
+                    {{student_details.zip_obj.value}}
+                    {% if student_details.zip_obj.name_fr %}- {{ student_details.zip_obj.name_fr }}{% endif %}
+                {% else %}
+                    {{ student_details.zip }}
+                {% endif %}
+                </p>
+            <p class="mb-0 d-flex align-items-center"><i class="fa fa-xs fa-star text-gray-200"></i><i class="fa fa-xs fa-star text-gray-200"></i><i class="fa fa-xs fa-star text-gray-200"></i><i class="fa fa-xs fa-star text-gray-200"></i><i class="fa fa-xs fa-star text-gray-200 mr-2"></i> <span class="text-warning text-sm"> <i class="fas fa-lock"></i> À venir</span></p>
+          </div>
+        {% if not preview %}
+          <div class="calltoactions">
+              <a href="#unlock" data-smooth-scroll class="btn btn-primary">
+                  {% if employeur.credits < 3 and not employeur.is_premium %}
+                      {% if not employeur.is_premium %}
+                          Débloquer {{ student_details.prenom }}
+                          {% else %}Coordonnées débloquées
+                      {% endif %}
+                  {% else %}
+                      {% if employeur.is_premium or unlocked %}
+                          Coordonnées débloquées
+                          {% else %}
+                          Utilisez 3 crédits pour débloquer {{ student_details.prenom }}
+                          {% endif %}
+                      {% endif %} <i class="fas fa-unlock"></i></a></div>{% endif %}
+        </div>
+      </div>
+    </section>
+    <section class="py-6">
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-8">
+            <!-- About Listing-->
+            <div>
+              <h5 class="mb-3">Expérience{% if student_details.experiences.all|length > 1 %}s{% endif %} antérieure{% if student_details.experiences.all|length > 1 %}s{% endif %} {% if student_details.prenom|make_list|first|lower == 'a' or student_details.prenom|make_list|first|lower == 'e' or student_details.prenom|make_list|first|lower == 'i' or student_details.prenom|make_list|first|lower == 'u' or student_details.prenom|make_list|first|lower == 'y' %}d'{{ student_details.prenom|title }}{% else %}de {{ student_details.prenom|title }}{% endif %} {% if employeur.is_premium %}{{ student_details.nom|title }}{% endif %}</h5>
+            <p class="text-muted">
+              {% if student_details.experiences.all|length > 0 %}
+                  <ul>
+                  {% for i in student_details.experiences.all %}
+                      <li>{{ i.duree }} semaine{% if i.duree > 1 %}s{% endif %} chez {{ i.employeur }} en tant que {{ i.fonction }}. <br>Personne de contact : {{ i.contact }}</li>
+                  {% endfor %}
+                  </ul>
+            {% else %}
+                  {{ student_details.prenom|title }} n'a ajouté aucune expériences passées
+            {% endif %}
+                </p>
+            <h5 class="mb-4">Type de jobs {% if student_details.prenom|make_list|first|lower == 'a' or student_details.prenom|make_list|first|lower == 'e' or student_details.prenom|make_list|first|lower == 'i' or student_details.prenom|make_list|first|lower == 'u' or student_details.prenom|make_list|first|lower == 'y' %}qu'{{ student_details.prenom }}{% else %}que {{ student_details.prenom }}{% endif %} recherche</h5>
+{% if student_details.jobs_wanted.all|length > 0 %}
+
+
+              <ul class="amenities-list list-inline">
+                  {% for j in student_details.jobs_wanted.all %}
+                      <li class="list-inline-item mb-3">
+                  <div class="d-flex align-items-center">
+                    <div class="icon-circle bg-secondary mr-2"><i class="fa fa-check"></i></div><span>{{j.nom}}</span>
+                  </div>
+                </li>
+                  {% endfor %}
+              </ul>
+    {% else %}
+    <p class="text-muted">Aucun type de jobs renseignés</p>
+            {% endif %}
+            <h5 class="mb-4">Disponibilités</h5>
+{% if student_details.dispos_set %}<p class="text-muted">
+                {% if student_details.dispo_type.intern_id == 1 %}
+                    {{ student_details.prenom|title }} recherche un travail à distance {{ student_details.nb_jours_dispos }} jour{% if student_details.nb_jours_dispos > 1 %}s{% endif %} par semaine.
+                {% elif student_details.dispo_type.intern_id == 2 %}
+                    {{ student_details.prenom|title }} recherche un travail régulier, en {% if student_details.soiree %}soirée{% else %}journée{% endif %}, {{ student_details.nb_jours_dispos }} jour{% if student_details.nb_jours_dispos > 1 %}s{% endif %} par semaine.
+                {% elif student_details.dispo_type.intern_id == 3 %}
+                    {{ student_details.prenom|title }} recherche un travail ponctuel.<br>{{ student_details.dispo_explications }}
+                {% elif student_details.dispo_type.intern_id == 4 %}
+                    {{ student_details.prenom|title }} recherche un stage {% if not student_details.stage_remunere %}non {% endif %}rémunéré.
+                {% endif %}
+            </p>
+            {% endif %}
+            <div id="calendar" class="datepicker-here" data-multiple-dates="500"
+                         data-multiple-dates-separator=", "></div>
+{% if student_details.languages.all|length > 0 %}
+             <h5 class="mb-4 mt-4">Langues</h5>
+
+            <ul class="amenities-list list-inline">
+                  {% for j in student_details.languages.all %}
+                      <li class="list-inline-item mb-3">
+                  <div class="d-flex align-items-center">
+                    <div class="icon-circle bg-secondary mr-2"><i class="fa fa-check"></i></div><span>{{j.language.value_fr}} avec un niveau {{ j.level.value_fr|lower }}</span>
+                  </div>
+                </li><br>
+                  {% endfor %}
+              </ul>
+            {% endif %}
+{% if student_details.study_domain or student_details.study_level or student_details.study_type %}
+            <h5 class="mb-4 mt-4">Etudes</h5>
+            <p><i class="fa fa-university text-primary mr-2"></i>Dernier diplome obtenu :
+            <ul>
+            {% if student_details.study_type %}<li>{{ student_details.study_type.value_fr }}</li>{% endif %}
+            {% if student_details.study_level %}<li>{{ student_details.study_level.value_fr }}</li>{% endif %}
+            {% if student_details.study_domain %}<li>{{ student_details.study_domain.value_fr }}</li>{% endif %}
+            </ul>
+    </p>
+
+{% endif %}
+
+            <h5 class="mb-4 mt-4">Mobilité</h5>
+            <p>
+                {% if student_details.permis %}<i class="fa fa-car text-primary mr-2"></i> {{ student_details.prenom|title }} dispose du permis B.
+            {% else %}<i class="fa fa-car text-danger mr-2"></i> {{ student_details.prenom|title }} ne dispose pas du permis B.
+            {% endif %}</p>
+
+            <h5 class="mb-4 mt-4">Salaire</h5>
+                <p>{{ student_details.prenom|title }} souhaite toucher un salaire de <b>{{ student_details.salary }} €/h</b>
+                </p>
+
+            </div>
+            <div class="text-block">
+            {% if not preview %}
+              <p class="subtitle text-sm text-warning">Fonctionnalité à venir <i class="fas fa-lock"></i></p>
+              <h5 class="mb-4">Notes et commentaires {% if student_details.prenom|make_list|first|lower == 'a' or student_details.prenom|make_list|first|lower == 'e' or student_details.prenom|make_list|first|lower == 'i' or student_details.prenom|make_list|first|lower == 'u' or student_details.prenom|make_list|first|lower == 'y' %}qu'{{ student_details.prenom }}{% else %}que {{ student_details.prenom }}{% endif %} a reçu </h5>
+              <div class="media d-block d-sm-flex review blurdiv">
+                <div class="text-md-center mr-4 mr-xl-5"><img src="https://yedo.s3.eu-west-3.amazonaws.com/static/tus/img/avatar/avatar-4.jpg" alt="Yedo Guy" class="d-block avatar avatar-xl p-2 mb-2"><span class="text-uppercase text-muted text-sm">Sept 2019</span></div>
+                <div class="media-body">
+                  <h6 class="mt-2 mb-1">Yedo Admin</h6>
+                  <div class="mb-2">
+                  </div>
+                  <p class="text-muted text-sm">What are you doing in Yedo's source code ? What are you doing in Yedo's source code ? What are you doing in Yedo's source code ? What are you doing in Yedo's source code ? </p>
+                </div>
+              </div>
+            {% endif %}
+              <div class="py-5">
+                  {% if preview %}
+                      <a href="{% url 'student_profile' %}"><button type="button" aria-expanded="false" class="btn btn-outline-primary"> <i class="fa fa-arrow-left"></i> Revenir à mes demandes</button></a>
+
+                  {% else %}
+                      <a href="{% url 'search_students' %}"><button type="button" aria-expanded="false" class="btn btn-outline-primary"> <i class="fa fa-arrow-left"></i> Revenir à la liste des étudiants disponibles</button></a>
+
+                  {% endif %}
+
+              </div>
+            </div>
+          </div>
+        {% if preview %}
+            <div class="col-lg-4">
+                    <h5 class="mb-3">Vidéo de présentation</h5>
+           <video width="100%" class="card" height="auto" autoplay controls style="border: solid; border-color: #5fb708;">
+
+  <source src="{{ student_details.video.url }}" type="video/mp4">
+Pas possible de lire de vidéo sur ce navigateur
+</video>
+            </div>
+        {% endif %}
+         {% if not preview %}
+          <div class="col-lg-4">
+            <div class="pl-xl-4">
+              <!-- Contact-->
+            {% if employeur.is_premium or unlocked %}
+                <div class="card border-0 shadow mb-5" id="unlock">
+                <div class="card-header bg-gray-100 py-4 border-0">
+                  <div class="media align-items-center">
+                    <div class="media-body">
+                      <h4 class="mb-0">Infos de contact</h4>
+                    </div>
+                    <svg class="svg-icon svg-icon svg-icon-light w-3rem h-3rem ml-3 text-muted">
+                      <use xlink:href="#calls-1"> </use>
+                    </svg>
+                  </div>
+                </div>
+                <div class="card-body">
+                  <ul class="list-unstyled mb-4">
+                      {% if student_details.phone %} <li class="mb-2"> <span class="text-gray-00 text text-decoration-none"><i class="fa fa-phone mr-3"></i><span class="text-bg"><b>{{student_details.phone}}</b></span></span></li>{% endif %}
+
+                    <li class="mb-2"> <span class=" text text-decoration-none"><i class="fa fa-envelope mr-3"></i><span class="text-bg"><b>{{student_details.user.email}}</b></span></span></li>
+                  </ul>
+                  <div class="text-center foreground">
+                      <a href="{% url 'demande' student_details.id %}" class="btn btn-outline-primary btn-block" ><i class="fas fa-unlock"></i> Envoyer une demande via Yedo.
+                      </a></div>
+                </div>
+              </div>
+            {% else %}
+                <div class="card border-0 shadow mb-5" id="unlock">
+                <div class="card-header bg-gray-100 py-4 border-0">
+                  <div class="media align-items-center">
+                    <div class="media-body">
+                      <p class="subtitle text-sm text-primary">{{student_details.prenom|title}} vous intéresse ?</p>
+                      <h4 class="mb-0">Informations</h4>
+                    </div>
+                    <svg class="svg-icon svg-icon svg-icon-light w-3rem h-3rem ml-3 text-muted">
+                      <use xlink:href="#security-1"> </use>
+                    </svg>
+                  </div>
+                </div>
+                <div class="card-body">
+                  <ul class="list-unstyled mb-4">
+                    <li class="mb-2"> <span class="text-gray-00 text-sm text-decoration-none"><i class="fa fa-phone mr-3"></i><span class="text-muted  blurdiv">+32 000 00 00 00</span></span></li>
+                    <li class="mb-2"> <span class=" text-sm text-decoration-none"><i class="fa fa-envelope mr-3"></i><span class="text-muted  blurdiv">hello@yedo.io</span></span></li>
+
+                  </ul>
+                  <div class="text-center foreground"><a href="{% url 'demande' student_details.id %}" class="btn btn-outline-primary btn-block"> <i class="fas fa-lock"></i>
+                      Débloquer pour <span class="text-warning">3 crédits</span>
+                      </a></div>
+                </div>
+              </div>
+            {% endif %}
+
+              <div class="text-center">
+                <p>
+                <style>
+                    .favorisbtn{
+                        background-color: #ff5a5f;
+                        color: white;
+                        border-color: #ff5a5f;
+                    }
+                    .favorisbtn:hover{
+                          color: #ff5a5f;
+  border-color: #ff5a5f;
+                        background-color: white;
+                    }
+
+                    .favorisbtn-outline {
+  color: #ff5a5f;
+  border-color: #ff5a5f;
+}
+                    .favorisbtn-outline:hover {
+                       background-color: #ff5a5f;
+                        color: white;
+                        border-color: #ff5a5f;
+}
+    </style>
+                  {% if student_details not in employeur.favoris.all %}
+                      <form method="POST" action="{% url 'student_details' student_details.id %}">
+                      {% csrf_token %}
+                          <input type="hidden" name="favori" value="true">
+                          <button type="submit" class="btn favorisbtn-outline" {% if not employeur.is_premium %}disabled{% endif %}>
+                              <i class="far fa-heart"></i> Favoris{% if not employeur.is_premium %}<br><span class="text-warning">Premium <i class="fa fa-lock"></i></span>{% endif %}</button>
+                      </form>
+                  {% else %}
+                      <form method="POST" action="{% url 'student_details' student_details.id %}">
+                      {% csrf_token %}
+                          <input type="hidden" name="del_favori" value="true">
+                          <button type="submit" class="btn favorisbtn" {% if not employeur.is_premium %}disabled{% endif %}>
+                              <i class="fa fa-heart"></i> Favoris{% if not employeur.is_premium %}<br><span class="text-warning">Premium <i class="fa fa-lock"></i></span>{% endif %}</button>
+                      </form>
+                  {% endif %}
+                  </p>
+              </div>
+            </div>
+          </div>
+        {% endif %}
+
+        </div>
+      </div>
+    </section>
+    {% if not preview %}
+    <div class="py-5 bg-gray-100">
+      <div class="container">
+        <h5 class="mb-4 text-primary" style="font-size: large;">Liste des étudiants similaires à {{ student_details.prenom }}</h5>
+        <!-- Slider main container-->
+        <div class="swiper-container swiper-container-mx-negative items-slider">
+          <!-- Additional required wrapper-->
+          <div class="swiper-wrapper pb-5">
+               {% for s in students %}
+                   <div class="swiper-slide h-auto px-2">
+            <div data-marker-id="{{s.id}}" class="w-100 h-100">
+              <div class="card h-100 border-0 shadow">
+              {% if s.photo %}
+                  <div style="background-image: url({% if s.thumbnail %}{{ s.thumbnail }}{% else %}{{ s.photo.url }}{% endif %}); min-height: 200px;object-fit: contain;" class="card-img-top overflow-hidden dark-overlay bg-cover">
+                  <!--img.img-fluid(src="#{imgBasePath}#{val.image}" alt="#{val.name}")--><a href="{% url 'student_details' s.id %}" class="tile-link"></a>
+                  <div class="card-img-overlay-bottom z-index-20">
+                    <h4 class="text-white text-shadow">{{s.prenom}} {% if employeur.is_premium %}{{ s.nom }}{% endif %} {% if s in employeur.favoris.all %}<i style="color:#ff5a5f" class="fa fa-heart"></i>{% endif %}</h4>
+                    <p class="mb-2 text-xs"><i class="fa fa-xs fa-star text-gray-200"></i><i class="fa fa-xs fa-star text-gray-200"></i><i class="fa fa-xs fa-star text-gray-200"></i><i class="fa fa-xs fa-star text-gray-200"></i><i class="fa fa-xs fa-star text-gray-200"></i> <span class="text-warning text-xs"> <i class="fas fa-lock fa-xs"></i> À venir</span>
+                    </p>
+                  </div>
+                  <div class="card-img-overlay-top d-flex justify-content-between align-items-center">
+                    <div class="badge badge-transparent badge-pill px-3 py-2">{{s.exp}} semaine{% if s.exp > 1 %}s{% endif %} d'expérience</div>
+
+
+                  </div>
+                </div>
+              {% else %}
+                  <div style="background-image: url(https://yedo.s3.eu-west-3.amazonaws.com/static/tus/img/unknown.jpg); min-height: 200px;object-fit: contain;" class="card-img-top overflow-hidden dark-overlay bg-cover">
+                  <!--img.img-fluid(src="#{imgBasePath}#{val.image}" alt="#{val.name}")--><a href="{% url 'student_details' s.id %}" class="tile-link"></a>
+                  <div class="card-img-overlay-bottom z-index-20">
+                    <h4 class="text-white text-shadow">{{s.prenom}} {% if employeur.is_premium %}{{ s.nom }}{% endif %} {% if s in employeur.favoris.all %}<i style="color:#ff5a5f" class="fa fa-heart"></i>{% endif %}</h4>
+                    <p class="mb-2 text-xs"><i class="fa fa-xs fa-star text-gray-200"></i><i class="fa fa-xs fa-star text-gray-200"></i><i class="fa fa-xs fa-star text-gray-200"></i><i class="fa fa-xs fa-star text-gray-200"></i><i class="fa fa-xs fa-star text-gray-200 mr-2"></i> <span class="text-warning text-xs"> <i class="fas fa-xs fa-lock"></i> A venir</span>
+                    </p>
+                  </div>
+                  <div class="card-img-overlay-top d-flex justify-content-between align-items-center">
+                   <div class="badge badge-transparent badge-pill px-3 py-2">{{s.exp}} semaine{% if s.exp > 1 %}s{% endif %} d'expérience</div>
+                  </div>
+                </div>
+              {% endif %}
+
+                <div class="card-body">
+{#                  {% if s.description %}<p class="text-sm text-muted mb-3">{% if s.description|length > 100 %}{{ s.description|slice:":100" }}..{% else %}{{ s.description }}{% endif %}</p>{% endif %}#}
+                    <p class="text-sm text-muted mb-1"><span style="text-align: left">{{ s.salary }} €/h</span></p>
+{#                    <p class="text-sm mb-0">#}
+{#                       <form method="POST" action="{% url 'search_students' %}" id="jobs_form">#}
+{#                  {% csrf_token %}#}
+{#                  <input type="hidden" name="jobs" value="" id="jobs_type_input">#}
+{#                        {% for j in s.jobs_wanted.all %}#}
+{#                            {% if forloop.last %}#}
+{##}
+{#                                <a href="#" style="color:#5d5d5d" class="mr-1 text-sm" onclick="validateJobsTypeForm({{ j.id }})">{{ j.nom }}.</a>#}
+{##}
+{#                            {% else %}#}
+{##}
+{#                                <a href="#" style="color:#5d5d5d" class="mr-1 text-sm" onclick="validateJobsTypeForm({{ j.id }})">{{ j.nom }},</a>#}
+{##}
+{#                            {% endif %}#}
+{#                        {% endfor %}#}
+{#                  </form>#}
+{#                    </p>#}
+                </div>
+              </div>
+            </div>
+                   </div>
+          {% endfor %}
+            <!-- Slides-->
+
+          </div>
+          <!-- If we need pagination-->
+          <div class="swiper-pagination"></div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+{% endblock %}
+
+{% block scripts %}
+     <script src="https://yedo.s3.eu-west-3.amazonaws.com/static/tus/js/datepicker.js">   </script>
+
+    <script src="https://yedo.s3.eu-west-3.amazonaws.com/static/tus/js/datepicker.fr.js">   </script>
+    <script>
+
+    var date = new Date();
+
+        date.setDate(date.getDate() + 60);
+        var dispos = [{% for j in student_details.jours_dispo.all %}new Date("{{ j.date.isoformat }}"),{% endfor %}];
+        var myDatepicker = $('#calendar').datepicker(
+            {
+                minDate: new Date(),
+                maxDate: date,
+                position: 'bottom left',
+                language: 'fr',
+                onRenderCell: function (date, cellType) {
+        if (cellType == 'day') {
+            var day = date.getDay(),
+                isDisabled = dispos.indexOf(day) == -1;
+
+            return {
+                disabled: isDisabled
+            }
+        }
+    }
+
+            }).data('datepicker');
+
+        myDatepicker.show();
+     myDatepicker.selectedDates = dispos;
+
+
+    function validateJobsTypeForm(id) {
+        document.getElementById("jobs_type_input").value = id;
+        document.getElementById("jobs_form").submit();
+
+    }
+    </script>
+
+{% endblock %}

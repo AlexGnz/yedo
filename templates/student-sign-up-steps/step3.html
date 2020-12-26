@@ -1,0 +1,108 @@
+{% extends 'student-sign-up-steps/step_base.html' %}
+{% block body %}
+<div style="height: 8px; top: 0px;" class="progress rounded-0 sticky-top">
+      <div role="progressbar" style="width: 75%" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100" class="progress-bar"></div>
+    </div>
+    <section class="py-5">
+      <div class="container">
+        <p class="subtitle text-primary">Trouve un job d'étudiant en 5 clics !</p>
+        <h1 class="h2 mb-5">Photo de profil<span class="text-muted float-right">Étape 3</span>      </h1>
+        <div class="row form-block">
+          <div class="col-lg-4">
+            <h4>Photo de profil et vérification</h4>
+            <p class="text-muted text-sm">Ta photo sera visible par tous les employeurs<span style="color: #ff5a5f; display: none;" id="photo_error">Mettre une photo de profil est obligatoire sur Yedo.</span></p>
+              {% if student.thumbnail %}<img src="{{ student.thumbnail }}" style="width: 100px; height: auto;">{% endif %}
+
+          </div>
+          <div class="col-lg-7 ml-auto">
+              <form id="demo-upload" action="{% url 'new' %}" method="POST" enctype="multipart/form-data">
+            <div class="form-group">
+
+                  {% csrf_token %}
+                  <input type="hidden" name="step3_form" value="true">
+                  <div class="form-group">
+                          <label for="customFile">Sélectionne ta photo de profil Yedo</label><br>
+                          <input id="customFile" name="file" type="file" accept="image/*">
+                        </div>
+
+            </div>
+                  <div class="form-group">
+                      <label for="smscode">Code de vérification reçu par sms {% if error_wrong_sms_code %}<span style="color: #ff5a5f">Code incorrect</span>{% endif %}{% if error_sms_code %}<span style="color: #ff5a5f">Complète le code</span>{% endif %}</label>
+                      <input type="text" id="smscode" required class="form-control" placeholder="ex.: 9832" name="smscode" maxlength="4">
+                  </div>
+                  {% if not parrain %}
+                  <div class="form-group">
+                      <label for="code">Code de parrainage</label>
+                      <input type="text" id="code" class="form-control" name="code" placeholder="Facultatif">
+                  </div>
+                  {% endif %}
+                  </form>
+          </div>
+        </div>
+        <div class="row form-block flex-column flex-sm-row">
+            <div class="col text-center text-sm-left"><form action="{% url 'new' %}" method="POST">{% csrf_token %}<input type="hidden" name="back" value="true"><button type="submit" class="btn btn-link text-muted"> <i class="fa-chevron-left fa mr-2"></i>Revenir</button></form>
+            </div>
+          <div class="col text-center text-sm-right"><button onclick="submitForm()" class="btn btn-primary px-3">
+
+              Terminer<i class="fa-chevron-right fa ml-2"></i></button></div>
+        </div>
+      </div>
+
+{#    <div id="confirmModal" class="modal" style="display: none;" role="dialog">#}
+{#                  <div role="document" class="modal-dialog modal-dialog-centered" >#}
+{#                    <div class="modal-content" style="border: solid; border-color: #5fb708">#}
+{#                      <div class="modal-body">#}
+{#                        <button type="button" data-dismiss="modal" aria-label="Close" class="close"><span aria-hidden="true" id="closeModal">× </span></button>#}
+{#                        <h2 id="exampleModalLabel" class="modal-title mb-3">Avertissement</h2>#}
+{#                        <p class="text-muted">Les étudiants présents sur Yedo sans photo de profil recoivent <strong>7 fois moins d'offres de jobs.</strong>.<br>Nous te conseillons réellement d'uploader une photo ;)</p>#}
+{#                      </div>#}
+{#                      <div class="modal-footer justify-content-end">#}
+{#                        <button type="button" class="btn btn-primary" id="buttonClose">Mettre une photo</button>#}
+{#                        <button type="button" data-dismiss="modal" class="btn btn-outline-muted" id="continueButton">Continuer quand même</button>#}
+{#                      </div>#}
+{#                    </div>#}
+{#                  </div>#}
+{#                </div>#}
+
+    </section>
+{% endblock %}
+{% block scripts %}
+    <script type="text/javascript">
+    mixpanel.track("Student sign up step 3");
+
+     var modal = document.getElementById("confirmModal");
+    function submitForm() {
+        {% if student.photo %}
+            submit();
+        {% else %}
+            if(document.getElementById("customFile").files.length === 0){
+            console.log("no files selected");
+            document.getElementById("photo_error").style.display = 'block';
+        } else {
+            submit();
+        }
+        {% endif %}
+
+    }
+
+    var button = document.getElementById("buttonClose");
+    var span = document.getElementById("closeModal");
+    var continueButton = document.getElementById("continueButton");
+
+    button.onclick = function () {
+        modal.style.display = "none";
+    }
+     span.onclick = function () {
+        modal.style.display = "none";
+    }
+    continueButton.onclick = function () {
+        submit()
+    }
+
+    function submit() {
+        document.getElementById('demo-upload').submit();
+    }
+
+
+    </script>
+{% endblock %}

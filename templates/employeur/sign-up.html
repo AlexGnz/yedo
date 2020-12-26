@@ -1,0 +1,146 @@
+{% extends 'student-sign-up-steps/step_base.html' %}
+{% block body %}
+<div style="height: 8px; top: 0px;" class="progress rounded-0 sticky-top">
+      <div role="progressbar" style="width: 100%" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" class="progress-bar"></div>
+    </div>
+    <section class="py-5">
+      <div class="container">
+        <p class="subtitle text-primary">Trouvez un étudiant en 5 clics !</p>
+        <h1 class="h2 mb-5"> Informations de base <span class="text-muted float-right">Etape 1</span>      </h1>
+        <form method="POST" action="{% url 'new' %}" id="employeurSignUp">
+            {% csrf_token %}
+            <input type="hidden" name="step1_form" value="true">
+        {% if student_to_unlock %}
+            <input type="hidden" name="student_to_unlock" value="{{ student_to_unlock.id }}">
+        {% endif %}
+          <div class="row form-block">
+            <div class="col-lg-4">
+              <h4></h4>
+              <p class="text-primary text-sm">{% if redirect_from_demande %}Pour pouvoir envoyer votre première demande, il nous faut quelques informations à communiquer à l'étudian(e).{% else %}Complétez vos informations de base, afin que vous puissez établir votre premier contact !{% endif %}
+                </p>
+            </div>
+            <div class="col-lg-7 ml-auto">
+              <div class="form-group"><input type="hidden" name="step1_form" value="true"></div>
+              <div class="form-group">
+                <label for="form_email" class="form-label">Votre email</label>
+                <input name="email" id="form_email" class="form-control" type="email" disabled value="{{ employeur.user.email }}">
+              </div>
+                <div class="form-group">
+                    {% if error_name %}<label for="form_name" class="form-label"><span style="color: #ff5a5f">Vous devez renseigner votre dénomination sociale</span></label>{% endif %}
+                <input name="name" id="form_name" required placeholder="Dénomination sociale" type="text" class="form-control" {% if employeur.name %}value="{{ employeur.name }}"{% endif %}>
+              </div>
+              <div class="form-group">
+                <label for="form_phone" class="form-label">{% if sent %}Vous vous êtes trompé de numéro? Contactez nous à l'adresse hello@yedo.io{% else %}Vérifiez votre numéro avant de valider !{% endif %} {% if error_phone %}<label for="form_phone" class="form-label"><span style="color: #ff5a5f">Vous devez renseigner votre numéro de téléphone</span></label>{% endif %}{% if error_wrong_phone %}<br><span style="color: #ff5a5f">Ce n'est pas un numéro de téléphone belge</span>{% endif %}{% if error_phone_used %}<br><span style="color: #ff5a5f">Numéro déjà utilisé sur yedo.</span>{% endif %}{% if error_code_sent %}<br><span style="color: #ff5a5f">Code déjà envoyé</span>{% endif %}</label>
+            <div class="input-group">
+
+            <div class="input-group-prepend"><span id="basic-addon1" class="input-group-text">+32</span></div>
+                <input name="phone" id="form_phone" placeholder="474 10 20 30" required class="form-control" {% if employeur.phone %}value="{{ employeur.phone|slice:"3:" }}"{% endif %} {% if sent %}disabled{% endif %}>
+            </div>
+              </div>
+            </div>
+          </div>
+            <div class="row form-block">
+            <div class="col-lg-4">
+              <h4>Localisation</h4>
+              <p class="text-muted text-sm">Renseigner l'adresse où le travail de l'étudiant aura lieu. Vous pouvez ajouter plusieurs adresses et les nommer si vous en avez plusieurs.
+              {% if employeur.adresses.all|length > 0 %}
+                      <ul>
+                      {% for a in employeur.adresses.all %}
+                          <li>{% if a.nom %}[{{ a.nom }}]{% endif %} {{ a.rue }}, {{ a.numero }}. {{ a.zip.value }} {{ a.zip.name_fr }}</li>
+                      {% endfor %}
+                      </ul>
+                      {% endif %}
+              </p>
+            </div>
+            <div class="col-lg-7 ml-auto">
+                <div class="form-group">
+                    {% if error_adresse %}<label for="form_street" class="form-label"><span style="color: #ff5a5f">Vous devez au moins renseigner une adresse</span></label>{% endif %}
+                <input name="street" placeholder="Rue" id="form_street" type="text" class="form-control">
+                <input name="numero" placeholder="Numéro" id="form_numero" type="text" class="form-control" >
+                <input type="hidden" id="inputHiddenAdresse" name="addAdresseInput" value="false">
+              </div>
+                  <div class="form-group">
+              <select required name="zip" id="form_zip" data-size="4" data-style="btn-selectpicker" data-actions-box="true" data-live-search="true" title="Code postal" class="selectpicker form-control">
+                {% for z in zips %}
+                    <option value="{{z.id}}" {% if employeur.zip and z.id == employeur.zip.id %}selected{% endif %}>{{z.value}}{% if z.name_fr %} - {{ z.name_fr }}{% endif %}</option>
+              {% endfor %}
+              </select>
+
+</div>
+            <div class="form-group">
+                <input name="adresse_name" placeholder="Nom de sauvegarde de l'adresse" id="form_adresse_name" type="text" class="form-control">
+             <button class="btn btn-primary mt-2" type="button" onclick="addAdresse()">Ajouter une autre adresse</button>
+              </div>
+            </div>
+          </div>
+          <div class="row form-block" id="codepromo">
+            <div class="col-lg-4">
+              <h4>Crédits gratuits</h4>
+              <p class="text-muted text-sm">Vous avez reçu un code promo? Encodez le afin de recevoir des crédits gratuits !</p>
+            </div>
+            <div class="col-lg-7 ml-auto">
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="form-group">
+                      {% if error_code_promo %}<label for="form_pass1" class="form-label">
+                          <span style="color: #ff5a5f">Code promo incorrect</span>
+                          </label>{% endif %}
+                  {% if code_promo_success %}<label for="form_pass1" class="form-label">
+                          <span class="text-primary">{{ code_promo_success }}</span>
+                          </label>{% endif %}
+                    <input name="code_promo" id="form_promo" placeholder="Code promotionnel" {% if employeur.code_used_at_signup %}value="{{ employeur.code_used_at_signup_ref }}" disabled="disabled" {% endif %} type="text" class="form-control">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="row form-block flex-column flex-sm-row">
+            <div class="col text-center text-sm-left">
+                {% if student_to_unlock %}
+                     <button type="submit" class="btn btn-link text-muted" onclick="studentProfile()"> <i class="fa-chevron-left fa mr-2"></i>Profil de {{ student_to_unlock.prenom|title }}</button>
+
+                {% else %}
+                <button type="submit" class="btn btn-link text-muted" onclick="home()"> <i class="fa-chevron-left fa mr-2"></i>Revenir</button>
+                {% endif %}
+            </div>
+            <div class="col text-center text-sm-right"><button onclick="send()" class="btn btn-primary px-3">
+
+                Confirmer<i class="fa-chevron-right fa ml-2"></i></button></div>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <script>
+    mixpanel.track("Employeur sign up view");
+    {% if student_to_unlock %}
+    function studentProfile() {
+        window.location.href = '{% url 'student_details' student_to_unlock.id %}';
+    }
+    {% endif %}
+    function home() {
+
+            window.location.href = '{% url 'main_home' %}';
+
+    }
+
+
+    function addAdresse() {
+        var street = document.getElementById("form_street");
+        var numero = document.getElementById("form_numero");
+        var zip = document.getElementById("form_zip");
+        console.log(street.value);
+        console.log(numero.value);
+        console.log(zip.value);
+        if (street.value.length > 1 && numero.value.length > 0 && zip.value.length > 0) {
+             document.getElementById("inputHiddenAdresse").value = "true";
+            document.getElementById("employeurSignUp").submit();
+        }
+        console.log('clicked');
+    }
+
+    function send() {
+        document.getElementById("employeurSignUp").submit();
+    }
+    </script>
+{% endblock %}

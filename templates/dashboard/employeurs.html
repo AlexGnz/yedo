@@ -1,0 +1,44 @@
+{% extends 'dashboard/base.html' %}
+
+
+{% block body %}
+    <div class="card shadow mb-4">
+            <div class="card-header py-3">
+              <h6 class="m-0 font-weight-bold text-primary">Les employeurs Yedo.</h6>
+            </div>
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                  <thead>
+                    <tr>
+                      <th>Nom</th>
+                      <th>Email</th>
+                      <th>Crédits</th>
+                        <th>Inscription</th>
+                    </tr>
+                  </thead>
+                  <tfoot>
+                    <tr>
+                      <th>Prénom et nom</th>
+                      <th>Email</th>
+                      <th>Crédits</th>
+                        <th>Inscription</th>
+                    </tr>
+                  </tfoot>
+                  <tbody>
+                    {% for e in employeurs %}
+                    <tr>
+                      <td>{% if e.signup_step == 1 %}<button class="btn btn-success btn-circle btn-sm"><i class="fas fa-check"></i></button>{% endif %} {{e.name}}</td>
+                      <td>{{e.user.email}}</td>
+                      <td>{% if e.is_premium %}<button class="btn btn-warning btn-sm btn-round">Premium</button>{% else %}{{ e.credits|floatformat:"0" }} €{% endif %}</td>
+                    <td>{{ e.created_at|date:"d/m/Y" }}</td>
+                    </tr>
+                  {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+
+{% endblock %}

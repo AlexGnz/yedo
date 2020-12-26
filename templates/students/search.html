@@ -1,0 +1,309 @@
+{% extends 'base.html' %}
+{% block padding-top %}
+    style="padding-top: 72px;"
+{% endblock %}
+{% block body %}
+<div class="container-fluid py-5 px-lg-5">
+      <div class="row border-bottom mb-4">
+        <div class="col-12">
+          <h1 class="display-4 font-weight-bold mb-4">Les étudiants disponibles </h1>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-lg-3 pt-3">
+          <form action="{% url 'search_students' %}" class="pr-xl-3" method="POST">
+          {% csrf_token %}
+          <div class="mb-4">
+                <button type="submit" class="btn btn-primary"> <i class="fas fa-filter mr-1"></i>Filtrer                </button>
+              {% if filter %}
+                  <button type="submit" onclick="cancelFilter()" class="btn btn-primary mt-2"> <i class="fas fa-times-circle mr-1"></i>Supprimer le filtre                </button>
+
+              {% endif %}
+              </div>
+            <div class="mb-4">
+              <select name="jobs" id="form_jobs" data-size="4" multiple data-style="btn-selectpicker" data-actions-box="true" data-live-search="true" data-selected-text-format="count &gt; 3" title="Types de jobs" class="selectpicker form-control">
+                {% for j in jobs_type %}
+
+
+                    <option value="{{j.id}}" {% if 'jobs' in request.POST and j in jobs_selected %}selected="selected"{% endif %}>{{j.nom}}</option>
+
+
+              {% endfor %}
+              </select>
+
+            </div>
+          <div class="input-group mb-4">
+
+  <select name="dispos" title="Disponibilités" data-style="btn-selectpicker" class="selectpicker form-control" data-actions-box="true" data-live-search="true" data-selected-text-format="count &gt; 1">
+                  {% for d in dispos_type %}
+                      {% if d.intern_id == 2 %}
+                      <option value="10" {% if dispo_journee %}selected="selected"{% endif %}>{{d.texte}} en journée </option>
+                      <option value="20" {% if dispo_soiree %}selected="selected"{% endif %}>{{d.texte}} en soirée </option>
+                          {% else %}
+                      <option value="{{d.intern_id}}" {% if 'dispos' in request.POST and d in dispos_selected %}selected="selected"{% endif %}>{{d.texte}}</option>
+                      {% endif %}
+                  {% endfor %}
+              </select>
+          <div class="input-group-append input-group-sm">
+   <a href="#"><span data-toggle="collapse" data-target="#infos" class="input-group-text form-control" style="border-color: transparent; background-color: transparent" aria-controls="leaveReview"><i class="fa fa-question"></i></span></a>
+  </div>
+</div>
+          <div id="infos" class="collapse mt-2 mb-4">
+
+                <p class="text-muted">
+                    <ul>
+              <li class="text-muted text-sm">
+                  <b>Travail à distance</b> : L'étudiant travaillera depuis le lieu de son choix/à domicile (Gestion d'une page FB, etc..)
+              </li>
+              <li class="text-muted text-sm">
+                  <b>Travail régulier</b> : L'étudiant travaillera sur le lieu de travail convenu de manière régulière (Tous les dimanches matin)
+              </li>
+              <li class="text-muted text-sm">
+                  <b>Travail ponctuel</b> : L'étudiant travaillera à un moment spécifique convenu (Serveur pour une soirée)
+              </li>
+              <li class="text-muted text-sm">
+                  <b>Stage</b> : L'étudiant travaillera sur base d'une convention de stage
+              </li></ul></p>
+
+          </div>
+          <div class="mb-4">
+              <select name="zips" id="form_zip" data-size="4" multiple data-style="btn-selectpicker" data-actions-box="true" data-live-search="true" data-selected-text-format="count &gt; 4" title="Code postal" class="selectpicker form-control">
+                {% for z in zips %}
+                    <option value="{{z.id}}" {% if 'zips' in request.POST and z in zips_selected %}selected="selected"{% endif %}>{{z.value}}{% if z.name_fr %} - {{ z.name_fr }}{% endif %}</option>
+              {% endfor %}
+              </select>
+            </div>
+          <div class="mb-4" data-toggle="tooltip" data-placement="bottom" title="" data-original-title="Recherchez des étudiants disponibles à ces dates">
+                    <input type="hidden" name="dates" id="datesChosen">
+                    <div id="calendar" class="datepicker-here" data-multiple-dates="200"
+                         data-multiple-dates-separator=", "></div>
+
+          </div>
+          <div class="mb-4">
+                  <label class="form-label">Salaire souhaité</label>
+                  <div id="slider-snap" class="text-primary"></div>
+                  <div class="nouislider-values">
+                    <div class="min">De <span id="slider-snap-value-from"></span> €/h</div>
+                    <div class="max">À <span id="slider-snap-value-to"></span> €/h</div>
+                  </div>
+                  <input type="hidden" name="pricefrom" id="slider-snap-input-from" {% if 'pricefrom' in request.POST %}value="{{ request.POST.pricefrom }}"{% else %} value="5"{% endif %}>
+                  <input type="hidden" name="priceto" id="slider-snap-input-to" {% if 'priceto' in request.POST %}value="{{ request.POST.priceto }}"{% else %} value="25"{% endif %}>
+                </div>
+          <div class="mb-4">
+                  <ul class="list-unstyled mb-0">
+                    <li>
+                      <div class="custom-control custom-checkbox">
+                        <input type="checkbox" id="favoris" name="favoris" {% if not employeur.is_premium %}disabled{% endif %} class="custom-control-input" {% if 'favoris' in request.POST  %}checked="checked"{% endif %}>
+                        <label for="favoris" class="custom-control-label">Étudiants favoris {% if not employeur.is_premium %}<a href="{% url 'payment' %}"><span class="text-warning"><i class="fa fa-lock"></i></span></a>{% endif %}</label>
+                      </div>
+                    </li>
+                  </ul>
+                </div>
+          <div class="mb-4">
+                  <ul class="list-unstyled mb-0">
+                    <li>
+                      <div class="custom-control custom-checkbox">
+                        <input type="checkbox" id="premium" name="premium" {% if not employeur.is_premium %}disabled{% endif %} class="custom-control-input" {% if 'premium' in request.POST  %}checked="checked"{% endif %}>
+                        <label for="premium" class="custom-control-label"><b><svg class="svg-icon text-info"><use xlink:href="#diamond-1"></use></svg></b>  Étudiants Premium {% if not employeur.is_premium %}<a href="{% url 'payment' %}"><span class="text-warning"><i class="fa fa-lock"></i></span></a>{% endif %}</label>
+                      </div>
+                    </li>
+                  </ul>
+                </div>
+
+              {% if 'all' in request.POST %} <input type="hidden" value="true" name="all">{% endif %}
+              {% if 'sort' in request.POST %} <input type="hidden" value="{{sort}}" name="sort_type">{% endif %}
+            {% if 'limit' in request.POST %} <input type="hidden" value="{{limit}}" name="limit">{% endif %}
+          <input type="hidden" name="filter" value="true">
+          </form>
+
+              <form method="POST" id="cancelFilterForm" action="{% url 'search_students' %}">{% csrf_token %}
+                  <input type="hidden" name="cancelFilter" value="True"></form>
+
+        </div>
+        <div class="col-lg-9">
+          <div class="d-flex justify-content-between align-items-center flex-column flex-md-row mb-4">
+            <div class="mr-3">
+              <p class="mb-3 mb-md-0"><strong>{{ students | length }}</strong> étudiant{% if students|length > 1 %}s{% endif %} trouvé{% if students|length > 1 %}s{% endif %}</p>
+            </div>
+            <div>
+              <label for="form_sort" class="form-label mr-6">Trier les étudiants</label>
+                <form method="POST" id="sortForm" action="{% url 'search_students' %}">
+                    {% csrf_token %}{% if 'all' in request.POST %} <input type="hidden" value="true" name="all">{% endif %}
+              <select name="sort_type" id="form_sort" data-style="btn-selectpicker" title="" class="selectpicker" onchange="changeSort()">
+                <option value="last_updated" {% if sort == '-last_updated' %}selected{% endif %}>Les nouveaux   </option>
+                <option value="salary" {% if sort == 'salary' %}selected{% endif %}>Les moins chers   </option>
+                <option value="-salary" {% if sort == '-salary' %}selected{% endif %}>Les plus chers   </option>
+                <option value="-exp" {% if sort == '-exp' %}selected{% endif %}>Les plus expérimentés  </option>
+                <option value="0" disabled>Les mieux notés [PREMIUM]</option>
+              </select>
+            {% if 'jobs' in request.POST %}
+                {% for j in jobs_selected %}
+                    <input type="hidden" name="jobs" value="{{ j.id }}">
+              {% endfor %}
+                    {% endif %}
+        {% if 'zips' in request.POST %}
+
+                {% for z in zips_selected %}
+                    <input type="hidden" name="zips" value="{{ z.id }}">
+              {% endfor %}
+                    {% endif %}
+                {% if 'pricefrom' in request.POST %}
+                <input type="hidden" name="pricefrom" id="slider-snap-input-from" value="{{ request.POST.pricefrom }}">
+                {% endif %}
+                {% if 'priceto' in request.POST %}
+                     <input type="hidden" name="priceto" id="slider-snap-input-to" value="{{ request.POST.priceto }}">
+                {% endif %}
+                {% if 'filter' in request.POST %}
+                     <input type="hidden" name="filter" value="true">
+                {% endif %}
+                {% if 'favoris' in request.POST  %}
+                    <input type="hidden" name="favoris" value="true">
+                {% endif %}
+                {% if jours_selected %}
+
+                <input type="hidden" name="dates" id="datesChosen" value="{% for j in jours_selected %}
+                    {{ j.date.isoformat }},
+                {% endfor %}">
+                {% endif %}
+                </form>
+            </div>
+          </div>
+          <div class="row">
+            <!-- venue item-->
+          {% for s in students %}
+            <div data-marker-id="{{s.id}}" class="col-sm-6 col-xl-4 mb-5">
+              <div class="card h-100 border-0 shadow">
+              {% if s.photo %}
+                  <div style="background-image: url({% if s.thumbnail %}{{ s.thumbnail }}{% else %}{{ s.photo.url }}{% endif %}); min-height: 200px; object-fit: contain;" class="card-img-top overflow-hidden dark-overlay bg-cover">
+                  <!--img.img-fluid(src="#{imgBasePath}#{val.image}" alt="#{val.name}")--><a href="{% url 'student_details' s.id %}" class="tile-link"></a>
+                  <div class="card-img-overlay-bottom z-index-20">
+                    <h4 class="text-white text-shadow">{{s.prenom}} {% if employeur.is_premium %}{{ s.nom }}{% endif %} {% if s in employeur.favoris.all %}<i style="color:#ff5a5f" class="fa fa-heart"></i>{% endif %}</h4>
+                    <p class="mb-2 text-xs"><i class="fa fa-xs fa-star text-gray-200"></i><i class="fa fa-xs fa-star text-gray-200"></i><i class="fa fa-xs fa-star text-gray-200"></i><i class="fa fa-xs fa-star text-gray-200"></i><i class="fa fa-xs fa-star text-gray-200 mr-2"></i> <span class="text-warning text-xs"> <i class="fas fa-xs fa-lock"></i> A venir</span>
+                    </p>
+                  </div>
+                  <div class="card-img-overlay-top d-flex justify-content-between align-items-center">
+                  {% if s.exp > 0 %}
+                    <div class="badge badge-transparent badge-pill px-3 py-2">{{s.exp}} semaine{% if s.exp > 1 %}s{% endif %} d'expérience</div>
+                       {% endif %}
+
+                  </div>
+                </div>
+              {% else %}
+                  <div style="background-image: url(https://yedo.s3.eu-west-3.amazonaws.com/static/tus/img/unknown.jpg); min-height: 200px;object-fit: contain;" class="card-img-top overflow-hidden dark-overlay bg-cover">
+                  <!--img.img-fluid(src="#{imgBasePath}#{val.image}" alt="#{val.name}")--><a href="{% url 'student_details' s.id %}" class="tile-link"></a>
+                  <div class="card-img-overlay-bottom z-index-20">
+                    <h4 class="text-white text-shadow">{{s.prenom}} {% if employeur.is_premium %}{{ s.nom }}{% endif %} {% if s in employeur.favoris.all %}<i style="color:#ff5a5f" class="fa fa-heart"></i>{% endif %}</h4>
+                    <p class="mb-2 text-xs"><i class="fa fa-xs fa-star text-gray-200"></i><i class="fa fa-xs fa-star text-gray-200"></i><i class="fa fa-xs fa-star text-gray-200"></i><i class="fa fa-xs fa-star text-gray-200"></i><i class="fa fa-xs fa-star text-gray-200 mr-2"></i> <span class="text-warning text-xs"> <i class="fas fa-xs fa-lock"></i> A venir</span>
+                    </p>
+                  </div>
+
+                  <div class="card-img-overlay-top d-flex justify-content-between align-items-center">
+                  {% if s.exp > 0 %}
+                    <div class="badge badge-transparent badge-pill px-3 py-2">{{s.exp}} semaine{% if s.exp > 1 %}s{% endif %} d'expérience</div>
+                       {% endif %}
+                  </div>
+
+                </div>
+              {% endif %}
+
+                <div class="card-body">
+{#                  {% if s.description %}<p class="text-sm text-muted mb-3">{% if s.description|length > 100 %}{{ s.description|slice:":100" }}..{% else %}{{ s.description }}{% endif %}</p>{% endif %}#}
+                    <p class="text-sm text-muted mb-1"><span style="text-align: left" class="mr-2">{{ s.salary }} €/h
+
+                        </span>
+                        {% if s.permis %}
+                      <i class="fa fa-car text-primary"></i>
+                      {% endif %}
+                       </p>
+{#                    <p class="text-sm mb-0">#}
+{#                      <form method="POST" action="{% url 'search_students' %}" id="jobs_form">#}
+{#                  {% csrf_token %}#}
+{#                  <input type="hidden" name="jobs" value="" id="jobs_type_input">#}
+{#                        {% for j in s.jobs_wanted.all %}#}
+{#                            {% if forloop.last %}#}
+{##}
+{#                                <a href="#" style="color:#5d5d5d" class="mr-1 text-sm" onclick="validateJobsTypeForm({{ j.id }})">{{ j.nom }}.</a>#}
+{##}
+{#                            {% else %}#}
+{##}
+{#                                <a href="#" style="color:#5d5d5d" class="mr-1 text-sm" onclick="validateJobsTypeForm({{ j.id }})">{{ j.nom }},</a>#}
+{##}
+{#                            {% endif %}#}
+{#                        {% endfor %}#}
+{#                  </form>#}
+{#                    </p>#}
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+
+{% endblock %}
+{% block scripts %}
+
+    <script src="https://yedo.s3.eu-west-3.amazonaws.com/static/tus/js/datepicker.js">   </script>
+
+    <script src="https://yedo.s3.eu-west-3.amazonaws.com/static/tus/js/datepicker.fr.js">   </script>
+    <script>
+
+    function validateJobsTypeForm(id) {
+        document.getElementById("jobs_type_input").value = id;
+        document.getElementById("jobs_form").submit();
+
+    }
+    function cancelFilter() {
+        document.getElementById("cancelFilterForm").submit();
+    }
+    
+var snapSlider = document.getElementById('slider-snap');
+
+      noUiSlider.create(snapSlider, {
+      	start: [ {% if 'pricefrom' in request.POST %}{{ request.POST.pricefrom }}{% else %}5{% endif %}, {% if 'priceto' in request.POST %}{{ request.POST.priceto }}{% else %}25{% endif %} ],
+      	snap: false,
+      	connect: true,
+          step: 0.5,
+      	range: {
+      		'min': 5,
+      		'max': 25
+      	}
+      });
+      var snapValues = [
+      	document.getElementById('slider-snap-value-from'),
+      	document.getElementById('slider-snap-value-to')
+      ];
+      var inputValues = [
+      	document.getElementById('slider-snap-input-from'),
+      	document.getElementById('slider-snap-input-to')
+      ];
+      snapSlider.noUiSlider.on('update', function( values, handle ) {
+      	snapValues[handle].innerHTML = values[handle];
+      	inputValues[handle].value = values[handle];
+      });
+      function changeSort() {
+          document.getElementById("sortForm").submit();
+      }
+      var date = new Date();
+
+        date.setDate(date.getDate() + 45);
+      var myDatepicker = $('#calendar').datepicker(
+            {
+                minDate: new Date(),
+                maxDate: date,
+                position: 'bottom left',
+                language: 'fr',
+                onSelect: function (dateText, inst) {
+                    document.getElementById("datesChosen").value = dateText;
+              }
+
+            }).data('datepicker');
+        var dispos = [{% for j in jours_selected %}new Date("{{ j.date.isoformat }}"),{% endfor %}];
+        myDatepicker.show();
+     myDatepicker.selectedDates = dispos;
+
+    </script>
+{% endblock %}

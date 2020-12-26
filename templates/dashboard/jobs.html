@@ -1,0 +1,95 @@
+{% extends 'dashboard/base.html' %}
+
+
+{% block body %}
+    {% if jobs and not job and not add_job %}
+    <div class="card shadow mb-4">
+            <div class="card-header py-3">
+              <h6 class="m-0 font-weight-bold text-primary">Les types de jobs <form method="POST" action="{% url 'dashboard_all_types' %}">{% csrf_token %}<input type="hidden" name="add_job"><button type="submit" class="btn btn-primary"><i class="fa fa-plus"></i></button></form></h6>
+            </div>
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                  <thead>
+                    <tr>
+                      <th>Nom</th>
+                      <th>Photo</th>
+                        <th>Visible</th>
+                        <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tfoot>
+                    <tr>
+                      <th>Nom</th>
+                      <th>Photo</th>
+                        <th>Visible</th>
+                        <th>Actions</th>
+                    </tr>
+                  </tfoot>
+                  <tbody>
+                    {% for j in jobs %}
+                    <tr>
+                      <td>{{j.nom}}</td>
+                      <td>{% if j.picture_url %}<img style="height: 50px; width: auto;" src="{{j.picture_url}}">{% endif %}</td>
+                      <td>{% if j.is_visible %}<i class="fa fa-eye"></i>{% else %}<i class="fa fa-eye-slash"></i>{% endif %}</td>
+                    <td>
+                        <form action="{% url 'dashboard_all_types' %}" method="POST">
+                            {% csrf_token %}
+                            <input type="hidden" name="to_edit_jobs" value="true">
+                            <input type="hidden" name="job_id" value="{{ j.id }}"><button type="submit" class="btn btn-primary"><i class="fa fa-edit"></i></button></form>
+                    <form action="{% url 'dashboard_all_types' %}" method="POST">
+                            {% csrf_token %}
+                            <input type="hidden" name="toggle_visibility" value="true">
+                            <input type="hidden" name="job_id" value="{{ j.id }}"><button type="submit" class="btn btn-primary">{% if j.is_visible %}<i class="fa fa-eye"></i>{% else %}<i class="fa fa-eye-slash"></i>{% endif %}</button></form>
+                    </td>
+                    </tr>
+                  {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+{% elif job %}
+<div class="row">
+<div class="col-lg-6">
+    <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                  <h6 class="m-0 font-weight-bold text-primary"> Modifier {{ job.nom }}</h6>
+                </div>
+                <div class="card-body">
+                  <form method="POST" action="{% url 'dashboard_all_types' %}">
+                  {% csrf_token %}
+        <input  type="hidden" name="edit_job" value="{{ job.id }}">
+        <input class="form-control" type="text" name="nom" value="{{ job.nom }}"><br>
+        <input class="form-control" type="url" name="url" value="{% if job.picture_url %}{{ job.picture_url }}{% endif %}"><br>
+        <button class="form-control" type="submit" class="btn btn-primary">Sauver <i class="fa fa-check"></i></button>
+
+        </form>
+                </div>
+              </div>
+</div>
+</div>
+
+{% elif add_job %}
+
+        <div class="row">
+<div class="col-lg-6">
+    <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                  <h6 class="m-0 font-weight-bold text-primary"> Ajouter un type de job</h6>
+                </div>
+                <div class="card-body">
+                  <form method="POST" action="{% url 'dashboard_all_types' %}">{% csrf_token %}
+        <input  type="hidden" name="add_job_form" value="true">
+        <input class="form-control" type="text" name="nom" placeholder="Nom" value=""><br>
+        <input class="form-control" type="url" name="url" placeholder="Url photo" value=""><br>
+        <button class="form-control" type="submit" class="btn btn-primary">Ajouter <i class="fa fa-check"></i></button>
+
+        </form>
+                </div>
+              </div>
+</div>
+</div>
+    {% endif %}
+
+{% endblock %}

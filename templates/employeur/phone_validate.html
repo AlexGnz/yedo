@@ -1,0 +1,38 @@
+{% extends 'student-sign-up-steps/step_base.html' %}
+{% block body %}
+<div style="height: 8px; top: 0px;" class="progress rounded-0 sticky-top">
+      <div role="progressbar" style="width: 100%" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" class="progress-bar"></div>
+    </div>
+    <section class="py-5">
+      <div class="container">
+        <p class="subtitle">{% if employeur %}Trouvez un étudiant en 5 clics !{% endif %}</p>
+        <h1 class="h2 mb-5"> {% if employeur %}Confirmez votre numéro de téléphone{% endif %}</h1>
+        <form method="POST" action="{% url 'new' %}">
+            {% csrf_token %}
+          <div class="row form-block">
+            <div class="col-lg-4">
+              <h4>Code de vérification</h4>
+              <p class="text-muted text-sm">Le code a été envoyé au numéro suivant : {{ employeur.phone }}.<br>Numéro incorrect ? Contactez-nous à l'adresse hello@yedo.io</p>
+            </div>
+            <div class="col-lg-7 ml-auto">
+              <div class="form-group"><input type="hidden" name="phone_confirm_code" value="true"></div>
+              <div class="form-group">
+                <label>{% if error_code %}<span style="color: #ff5a5f">Code incorrect</span>{% else %}Code reçu par sms{% endif %}</label>
+                <input name="code" id="form_code" type="text" class="form-control" placeholder="ex.: 9832" maxlength="4">
+              </div>
+            </div>
+          </div>
+
+          <div class="row form-block flex-column flex-sm-row">
+             <div class="col text-center text-sm-left">
+                  <button type="submit" class="btn btn-link text-muted" onclick="goToHome()"> <i class="fa-chevron-left fa mr-2"></i>Revenir</button>
+            </div>
+            <div class="col text-center text-sm-right">
+                <button type="submit" class="btn btn-primary px-3">
+
+                {% if employeur %}Confirmer mon numéro{% endif %}<i class="fa-chevron-right fa ml-2"></i></button></div>
+          </div>
+        </form>
+      </div>
+    </section>
+{% endblock %}

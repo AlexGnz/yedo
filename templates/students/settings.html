@@ -1,0 +1,156 @@
+{% extends 'student-sign-up-steps/step_base.html' %}
+{% block body %}
+<div style="height: 8px; top: 0px;" class="progress rounded-0 sticky-top">
+      <div role="progressbar" style="width: 100%" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" class="progress-bar"></div>
+    </div>
+    <section class="py-5">
+      <div class="container">
+        <p class="subtitle text-primary">Trouve un job d'étudiant en 5 clics !</p>
+        <h1 class="h2 mb-5"> Disponibilités </h1>
+        <form method="POST" action="{% url 'student_settings' %}">
+            {% csrf_token %}
+            <div class="row form-block">
+            <div class="col-lg-4">
+              <h4>Quelles sont tes disponiblités, en général ?</h4>
+              <p class="text-muted text-sm">Sélectionne ton type de disponibilité
+
+                 {% if student.dispos_set %}<br>Actuellement : <span class="text-primary" style="font-weight: bold">
+                {% if student.dispo_type.intern_id == 1 %}
+                    travail à distance {{ student.nb_jours_dispos }} jour{% if student.nb_jours_dispos > 1 %}s{% endif %} par semaine.
+                {% elif student.dispo_type.intern_id == 2 %}
+                    travail régulier, en {% if student.soiree %}soirée{% else %}journée{% endif %}, {{ student.nb_jours_dispos }} jour{% if student.nb_jours_dispos > 1 %}s{% endif %} par semaine.
+                {% elif student.dispo_type.intern_id == 3 %}
+                   travail ponctuel.<br>{{ student.dispo_explications }}
+                {% elif student.dispo_type.intern_id == 4 %}
+                    stage {% if not student.stage_remunere %}non {% endif %}rémunéré.
+                {% endif %}
+                     </span>
+            {% endif %}
+
+              </p>
+            </div>
+            <div class="col-lg-7 ml-auto">
+
+                <div class="form-group">
+                <select name="dispo_type" id="form_dispo_type" data-style="btn-primary" title="" class="selectpicker mb-3" onchange="checkType()">
+                <option value="0">Sélectionner</option>
+                    {% for d in dispos_type %}
+                      <option value="{{ d.intern_id }}">{{ d.texte }}</option>
+                    {% endfor %}
+                </select>
+              <div style="display: none" id="form_choose_soiree" >
+              <select name="journee" data-style="btn-muted" title="" class="selectpicker mb-3">
+                      <option value="1">En journée</option>
+                    <option value="0">En soirée</option>
+                </select>
+              </div>
+              <div style="display: none" id="form_stage" >
+              <select name="stage_remunere" data-style="btn-muted" title="" class="selectpicker mb-3">
+                      <option value="1">Rémunéré</option>
+                    <option value="0">Non rémunéré</option>
+                </select>
+              </div>
+<div style="display: none" id="form_choose_days">
+
+                <select name="nb_days" data-style="btn-selectpicker" title="" style="width: 150%" class="selectpicker mb-3">
+                    <option value="1">1 jour semaine</option>
+                    <option value="2">2 jours semaine</option>
+                    <option value="3">3 jours semaine</option>
+                    <option value="4">4 jours semaine</option>
+                    <option value="5">5 jours semaine</option>
+                </select>
+</div>
+              <div id="form_dispo_description" style="display: none">
+                  <textarea name="description_dispo" rows="2" aria-describedby="descriptionHelp" class="form-control"></textarea><small id="descriptionHelp" class="form-text text-muted mt-2">Donne plus de détails à l'employeur quant à tes disponibilités ! </small>
+              </div>
+              </div>
+
+            </div>
+          </div>
+          <div class="row form-block">
+            <div class="col-lg-4">
+              <h4>Précise les via ce calendrier</h4>
+              <p class="text-muted text-sm">Garde tes disponibilités à jour afin que les employeurs puissent savoir quand tu es disponible</p>
+            </div>
+            <div class="col-lg-7 ml-auto">
+                <div class="form-group">
+                    <input type="hidden" name="dates" id="datesChosen">
+                    <div id="calendar" class="datepicker-here" data-multiple-dates="200"
+                         data-multiple-dates-separator=", "></div>
+                </div>
+
+          </div>
+          </div>
+
+          <div class="row form-block flex-column flex-sm-row">
+              <div class="col text-center text-sm-left">
+                <div class="form-group">
+                    <a href="{% url 'student_profile' %}" class="text-muted">
+
+                <i class="fa-chevron-left fa ml-2"></i> Revenir</a>
+                </div>
+            </div>
+
+            <div class="col text-center text-sm-right">
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary px-3">
+
+                Enregistrer<i class="fa-chevron-right fa ml-2"></i></button>
+                </div>
+            </div>
+          </div>
+        </form>
+      </div>
+    </section>
+{% endblock %}
+{% block scripts %}
+
+    <script src="https://yedo.s3.eu-west-3.amazonaws.com/static/tus/js/datepicker.js">   </script>
+
+    <script src="https://yedo.s3.eu-west-3.amazonaws.com/static/tus/js/datepicker.fr.js">   </script>
+    <script>
+    var date = new Date();
+
+        date.setDate(date.getDate() + 60);
+        var myDatepicker = $('#calendar').datepicker(
+            {
+                minDate: new Date(),
+                maxDate: date,
+                position: 'bottom left',
+                language: 'fr',
+                onSelect: function (dateText, inst) {
+                    document.getElementById("datesChosen").value = dateText;
+              }
+
+            }).data('datepicker');
+        var dispos = [{% for j in student.jours_dispo.all %}new Date("{{ j.date.isoformat }}"),{% endfor %}];
+        myDatepicker.show();
+     myDatepicker.selectedDates = dispos;
+
+     function checkType() {
+        var e = document.getElementById('form_dispo_type');
+        var id = parseInt(e.options[e.selectedIndex].value);
+
+        document.getElementById("form_choose_days").style.display = "none";
+        document.getElementById("form_choose_soiree").style.display = "none";
+            document.getElementById("form_stage").style.display = "none";
+            document.getElementById("form_dispo_description").style.display = "none";
+        if (id === 1) {
+            // Montrer choix jours
+            document.getElementById("form_choose_days").style.display = "initial";
+        } else if (id === 2) {
+            // Montrer choix jour + journée et soirée
+            document.getElementById("form_choose_days").style.display = "initial";
+            document.getElementById("form_choose_soiree").style.display = "initial";
+        } else if (id === 3) {
+            // Montrer text Area
+
+            document.getElementById("form_dispo_description").style.display = "initial";
+        } else if (id === 4) {
+            // Montrer choix rémunéré ou non
+            document.getElementById("form_stage").style.display = "initial";
+        }
+        }
+    </script>
+
+{% endblock %}
